@@ -1,0 +1,90 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useAutenticacao } from '../autenticacao/useAutenticacao'
+import { Botao } from '../componentes/Botao'
+import { CampoFormulario } from '../componentes/CampoFormulario'
+import { Checkbox } from '../componentes/Checkbox'
+import { LayoutAutenticacao } from '../componentes/LayoutAutenticacao'
+import { Mensagem } from '../componentes/Mensagem'
+import type { DadosLogin } from '../validacoes/esquemasAutenticacao'
+import { esquemaLogin } from '../validacoes/esquemasAutenticacao'
+import estilos from './Autenticacao.module.css'
+
+interface EstadoNavegacao {
+  mensagem?: string
+  de?: string
+}
+
+export function TelaEntrar() {
+  const { entrar } = useAutenticacao()
+  const navegar = useNavigate()
+  const localizacao = useLocation()
+  const estado = localizacao.state as EstadoNavegacao | null
+  const [erroGeral, definirErroGeral] = useState('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<DadosLogin>({
+    resolver: zodResolver(esquemaLogin),
+    defaultValues: {
+      email: 'filipe.lopes@email.com',
+      senha: '',
+      lembrar: false,
+    },
+  })
+
+  async function autenticar(dados: DadosLogin) {
+    definirErroGeral('')
+    try {
+      await entrar(dados)
+      navegar(estado?.de === '/app' ? estado.de : '/app', { replace: true })
+    } catch {
+      definirErroGeral('Não foi possível entrar. Confira o e-mail e a senha.')
+    }
+  }
+
+  return (
+    <LayoutAutenticacao
+      titulo="Entrar na sua conta"
+      subtitulo="Bem-vinda de volta. Continue de onde parou."
+      tamanhoLogo={44}
+    >
+      <form className={estilos.formulario} onSubmit={handleSubmit(autenticar)} noValidate>
+        {estado?.mensagem ? <Mensagem tom="sucesso">{estado.mensagem}</Mensagem> : null}
+        {erroGeral ? <Mensagem tom="erro">{erroGeral}</Mensagem> : null}
+        <CampoFormulario
+          id="email"
+          rotulo="E-mail"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="você@email.com"
+          erro={errors.email?.message}
+          {...register('email')}
+        />
+        <CampoFormulario
+          id="senha"
+          rotulo="Senha"
+          type="password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          erro={errors.senha?.message}
+          {...register('senha')}
+        />
+        <div className={estilos.linhaOpcoes}>
+          <Checkbox {...register('lembrar')}>Lembrar-me</Checkbox>
+          <Link className={estilos.link} to="/recuperar-senha">Esqueci minha senha</Link>
+        </div>
+        <Botao type="submit" larguraTotal carregando={isSubmitting}>
+          Entrar
+        </Botao>
+      </form>
+      <div className={estilos.rodapeAutenticacao}>
+        Não tem uma conta? <Link className={estilos.link} to="/cadastro">Criar conta</Link>
+      </div>
+    </LayoutAutenticacao>
+  )
+}

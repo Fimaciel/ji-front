@@ -1,0 +1,314 @@
+.paginaAutenticacao {
+  width: 100%;
+  min-height: 100dvh;
+  padding: 48px 24px;
+  display: grid;
+  place-items: center;
+  background: var(--ji-fundo-suave);
+  color: var(--ji-texto);
+}
+
+.conteudoAutenticacao {
+  width: min(100%, 380px);
+}
+
+.conteudoAmplo {
+  width: min(100%, 420px);
+}
+
+.logoAutenticacao {
+  min-height: 70px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.cabecalhoAutenticacao {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.cabecalhoAutenticacao h1 {
+  margin: 0;
+  color: var(--ji-texto);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.subtitulo {
+  margin-top: 8px;
+  color: var(--ji-texto-secundario);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gradeDupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.linhaOpcoes {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.linhaTermos {
+  margin-top: 2px;
+}
+
+.erroTermos {
+  margin: 6px 0 0 24px;
+  color: #c8312f;
+  font-size: 12px;
+}
+
+.link,
+.botaoLink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ji-primaria);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link:hover,
+.botaoLink:hover {
+  text-decoration: underline;
+}
+
+.botaoLinkInline {
+  display: inline;
+  font-size: inherit;
+}
+
+.rodapeAutenticacao {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ji-borda-suave);
+  color: var(--ji-texto-secundario);
+  font-size: 13px;
+  text-align: center;
+}
+
+.linkVoltar {
+  min-height: 44px;
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.centralizado {
+  text-align: center;
+}
+
+.iconeConfirmacao {
+  width: 48px;
+  height: 48px;
+  margin: 4px auto 18px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--ji-positiva-suave);
+  color: var(--ji-positiva);
+}
+
+.tituloEstado {
+  margin: 0;
+  color: var(--ji-texto);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.textoEstado {
+  margin: 8px 0 0;
+  color: var(--ji-texto-secundario);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.areaReenvio {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ji-borda-suave);
+  color: var(--ji-texto-secundario);
+  font-size: 12.5px;
+}
+
+.demonstracao {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px dashed var(--ji-borda);
+  border-radius: 8px;
+  background: var(--ji-fundo-mudo);
+  color: var(--ji-texto-secundario);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.demonstracao a {
+  color: var(--ji-primaria);
+  font-weight: 500;
+}
+
+.avisoExpiracao {
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ji-aviso-suave);
+  color: var(--ji-texto);
+  font-size: 12.5px;
+}
+
+.avisoExpiracao svg {
+  flex: 0 0 auto;
+  color: var(--ji-aviso);
+}
+
+.indicadorSenha {
+  text-align: left;
+}
+
+.barrasSenha {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.barrasSenha span {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ji-trilho);
+}
+
+.barrasSenha .barraAtiva {
+  background: var(--ji-positiva);
+}
+
+.indicadorSenha ul {
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  color: var(--ji-texto-secundario);
+  font-size: 12px;
+}
+
+.indicadorSenha li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.requisitoAtendido {
+  color: var(--ji-texto) !important;
+}
+
+.marcaRequisito {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  background: var(--ji-fundo-sutil);
+  color: var(--ji-texto-terciario);
+  font-size: 9px;
+}
+
+.requisitoAtendido .marcaRequisito {
+  background: var(--ji-positiva-suave);
+  color: var(--ji-positiva);
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.carregandoPagina {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--ji-borda);
+  border-top-color: var(--ji-primaria);
+  border-radius: 50%;
+  animation: girar 700ms linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1023px) {
+  .link,
+  .botaoLink {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 639px) {
+  .paginaAutenticacao {
+    padding: 32px 24px;
+    align-items: center;
+  }
+
+  .conteudoAutenticacao,
+  .conteudoAmplo {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .logoAutenticacao {
+    margin-bottom: 20px;
+  }
+
+  .cabecalhoAutenticacao h1 {
+    font-size: 22px;
+  }
+
+  .subtitulo {
+    font-size: 13px;
+  }
+
+  .gradeDupla {
+    grid-template-columns: 1fr;
+  }
+
+  .linhaOpcoes {
+    align-items: flex-start;
+  }
+
+}

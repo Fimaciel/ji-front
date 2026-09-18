@@ -1,0 +1,197 @@
+.botao {
+  min-height: 40px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.botaoPrimario {
+  background: var(--ji-primaria);
+  color: #fff;
+}
+
+.botaoPrimario:not(:disabled):hover {
+  background: var(--ji-primaria-hover);
+}
+
+.botaoSecundario {
+  border-color: var(--ji-borda);
+  background: var(--ji-fundo);
+  color: var(--ji-texto);
+}
+
+.botaoSecundario:not(:disabled):hover {
+  background: var(--ji-fundo-sutil);
+}
+
+.botaoFantasma {
+  background: transparent;
+  color: var(--ji-texto-secundario);
+}
+
+.botaoFantasma:not(:disabled):hover {
+  color: var(--ji-texto);
+  background: var(--ji-fundo-sutil);
+}
+
+.larguraTotal {
+  width: 100%;
+}
+
+.campoGrupo {
+  display: block;
+  min-width: 0;
+}
+
+.rotulo {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ji-texto);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.campoCaixa {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ji-fundo-suave);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.campoCaixa:focus-within {
+  border-color: var(--ji-primaria);
+  box-shadow: var(--ji-foco);
+}
+
+.campoComErro {
+  border-color: var(--ji-negativa);
+}
+
+.campo {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ji-texto);
+  font-size: 14px;
+}
+
+.campo::placeholder {
+  color: var(--ji-texto-terciario);
+}
+
+.sufixo {
+  display: inline-flex;
+  color: var(--ji-texto-secundario);
+}
+
+.ajuda,
+.erroCampo {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ajuda {
+  color: var(--ji-texto-secundario);
+}
+
+.erroCampo {
+  color: #c8312f;
+}
+
+.checkboxRotulo {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--ji-texto-secundario);
+  font-size: 12.5px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--ji-primaria);
+}
+
+.mensagem {
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.mensagemErro {
+  border-color: #f4c9c9;
+  background: var(--ji-negativa-suave);
+  color: #9f1f1f;
+}
+
+.mensagemSucesso {
+  border-color: #b7ead8;
+  background: var(--ji-positiva-suave);
+  color: #0f7157;
+}
+
+.mensagemInformativa {
+  border-color: var(--ji-borda);
+  background: var(--ji-fundo-sutil);
+  color: var(--ji-texto-secundario);
+}
+
+.carregando {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--ji-borda);
+  border-top-color: var(--ji-primaria);
+  border-radius: 50%;
+  animation: girar 700ms linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1023px) {
+  .botao,
+  .campoCaixa {
+    min-height: 44px;
+  }
+
+  .checkboxRotulo {
+    min-height: 44px;
+    align-items: flex-start;
+  }
+
+  .checkbox {
+    margin-top: 14px;
+  }
+}

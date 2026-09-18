@@ -1,0 +1,8 @@
+.logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--tamanho-simbolo) * 0.18);
+  color: var(--ji-primaria);
+  line-height: 0;
+}
