@@ -56,6 +56,10 @@ export function TelaCadastro() {
         setError('email', { message: erro.message }, { shouldFocus: true })
         return
       }
+      if (erro instanceof ErroAutenticacao && erro.codigo === 'CPF_EM_USO') {
+        setError('cpf', { message: erro.message }, { shouldFocus: true })
+        return
+      }
       definirErroGeral('Não foi possível criar a conta. Tente novamente.')
     }
   }

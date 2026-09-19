@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+const SENHA_DEMONSTRACAO = 'Ji@12345'
+
 test.describe('autenticação da Sprint 1', () => {
   test('faz um cadastro completo e entra com a conta criada', async ({ page }) => {
     await page.goto('/cadastro')
@@ -46,7 +48,7 @@ test.describe('autenticação da Sprint 1', () => {
     )
 
     await page.getByLabel('E-mail').fill('filipe.lopes@email.com')
-    await page.getByLabel('Senha').fill('Senha123')
+    await page.getByLabel('Senha').fill(SENHA_DEMONSTRACAO)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page.getByRole('heading', { name: 'Sua conta está pronta' })).toBeVisible()
   })
@@ -98,7 +100,7 @@ test.describe('autenticação da Sprint 1', () => {
     await page.goto('/app')
     await expect(page).toHaveURL(/\/entrar$/)
 
-    await page.getByLabel('Senha').fill('Senha123')
+    await page.getByLabel('Senha').fill(SENHA_DEMONSTRACAO)
     await page.getByRole('button', { name: 'Entrar' }).click()
     await expect(page).toHaveURL(/\/app$/)
     await page.getByLabel('Abrir menu do usuário').click()

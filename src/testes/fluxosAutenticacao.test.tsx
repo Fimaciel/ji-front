@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { App } from '../App'
 import { ProvedorAutenticacao } from '../autenticacao/ProvedorAutenticacao'
 import { reiniciarAutenticacaoMock } from '../mocks/ServicoAutenticacaoMock'
+import { servicoAutenticacao } from '../servicos/instanciaAutenticacao'
+
+const SENHA_DEMONSTRACAO = 'Ji@12345'
 
 function renderizarRota(rota: string) {
   return render(
@@ -45,7 +48,7 @@ describe('fluxos de autenticação', () => {
     const pessoa = usuario.setup()
     renderizarRota('/entrar')
 
-    await pessoa.type(await screen.findByLabelText('Senha'), 'Senha123')
+    await pessoa.type(await screen.findByLabelText('Senha'), SENHA_DEMONSTRACAO)
     await pessoa.click(screen.getByRole('button', { name: 'Entrar' }))
 
     expect(await screen.findByRole('heading', { name: 'Sua conta está pronta' })).toBeInTheDocument()
@@ -89,6 +92,31 @@ describe('fluxos de autenticação', () => {
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-invalid', 'true')
   })
 
+  it('associa o erro de CPF duplicado ao campo de cadastro', async () => {
+    await servicoAutenticacao.cadastrarUsuario({
+      nome: 'Ana',
+      sobrenome: 'Silva',
+      cpf: '529.982.247-25',
+      dataNascimento: '',
+      email: 'ana@email.com',
+      senha: 'Senha123!',
+      aceitouTermos: true,
+    })
+    const pessoa = usuario.setup()
+    renderizarRota('/cadastro')
+
+    await pessoa.type(await screen.findByLabelText('Nome'), 'João')
+    await pessoa.type(screen.getByLabelText('Sobrenome'), 'Souza')
+    await pessoa.type(screen.getByLabelText('CPF (opcional)'), '52998224725')
+    await pessoa.type(screen.getByLabelText('E-mail'), 'joao@email.com')
+    await pessoa.type(screen.getByLabelText('Senha'), 'Senha123!')
+    await pessoa.click(screen.getByRole('checkbox', { name: /Li e aceito os/i }))
+    await pessoa.click(screen.getByRole('button', { name: 'Criar conta' }))
+
+    expect(await screen.findByText('Este CPF já está vinculado a uma conta ativa.')).toBeInTheDocument()
+    expect(screen.getByLabelText('CPF (opcional)')).toHaveAttribute('aria-invalid', 'true')
+  })
+
   it('mantém a confirmação da recuperação igual para e-mails distintos', async () => {
     const pessoa = usuario.setup()
     const primeira = renderizarRota('/recuperar-senha')
@@ -116,7 +144,7 @@ describe('fluxos de autenticação', () => {
     const pessoa = usuario.setup()
     const primeiraNavegacao = renderizarRota('/rota-inexistente')
     await screen.findByRole('heading', { name: 'Entrar na sua conta' })
-    await pessoa.type(screen.getByLabelText('Senha'), 'Senha123')
+    await pessoa.type(screen.getByLabelText('Senha'), SENHA_DEMONSTRACAO)
     await pessoa.click(screen.getByRole('button', { name: 'Entrar' }))
     await screen.findByRole('heading', { name: 'Sua conta está pronta' })
     primeiraNavegacao.unmount()

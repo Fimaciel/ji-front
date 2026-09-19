@@ -12,7 +12,12 @@ npm run dev
 Conta de demonstração:
 
 - e-mail: `filipe.lopes@email.com`
-- senha: qualquer valor não vazio (o mock nunca persiste senhas)
+- senha: `Ji@12345`
+
+As credenciais de contas cadastradas são resumidas somente na memória do mock. A aplicação nunca
+grava senhas em texto claro, CPF ou data de nascimento no armazenamento do navegador.
+Esse resumo local serve apenas à demonstração; na integração real, o hash bcrypt será responsabilidade
+do back-end.
 
 Na recuperação, a ação **Modo demonstração** abre o link mockado sem envio real de e-mail. Também podem ser conferidos diretamente os tokens `token-demonstracao-expirado` e `token-demonstracao-utilizado` na rota `/redefinir-senha?token=...`.
 

@@ -56,6 +56,7 @@ export interface EntradaRedefinicaoSenha {
 
 export type CodigoErroAutenticacao =
   | 'EMAIL_EM_USO'
+  | 'CPF_EM_USO'
   | 'CREDENCIAIS_INVALIDAS'
   | 'TOKEN_EXPIRADO'
   | 'TOKEN_UTILIZADO'
