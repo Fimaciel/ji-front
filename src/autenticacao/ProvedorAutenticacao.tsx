@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { servicoAutenticacao } from '../servicos/instanciaAutenticacao'
-import type { EntradaLogin, SessaoAutenticada } from '../tipos/autenticacao'
+import { servicoAutenticacao, servicoConta } from '../servicos/instanciaAutenticacao'
+import { atualizarUsuarioPersistido } from '../servicos/armazenamentoSessao'
+import type { EntradaLogin, SessaoAutenticada, UsuarioResumo } from '../tipos/autenticacao'
 import { ContextoAutenticacao } from './contextoAutenticacao'
 
 export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
@@ -31,9 +32,20 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
     definirSessao(null)
   }, [])
 
+  const atualizarUsuario = useCallback((usuario: UsuarioResumo) => {
+    atualizarUsuarioPersistido(usuario)
+    definirSessao((atual) => atual ? { ...atual, usuario } : atual)
+  }, [])
+
+  const encerrarConta = useCallback(async (aposEncerrar?: () => void) => {
+    await servicoConta.encerrarConta()
+    aposEncerrar?.()
+    definirSessao(null)
+  }, [])
+
   const valor = useMemo(
-    () => ({ sessao, carregandoSessao, entrar, sair }),
-    [sessao, carregandoSessao, entrar, sair],
+    () => ({ sessao, carregandoSessao, entrar, sair, atualizarUsuario, encerrarConta }),
+    [sessao, carregandoSessao, entrar, sair, atualizarUsuario, encerrarConta],
   )
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>

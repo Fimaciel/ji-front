@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAutenticacao } from '../autenticacao/useAutenticacao'
 import { Botao } from '../componentes/Botao'
 import { CampoFormulario } from '../componentes/CampoFormulario'
@@ -10,6 +10,7 @@ import { LayoutAutenticacao } from '../componentes/LayoutAutenticacao'
 import { Mensagem } from '../componentes/Mensagem'
 import type { DadosLogin } from '../validacoes/esquemasAutenticacao'
 import { esquemaLogin } from '../validacoes/esquemasAutenticacao'
+import { limparAvisoEncerramento, obterAvisoEncerramento } from '../servicos/avisosNavegacao'
 import estilos from './Autenticacao.module.css'
 
 interface EstadoNavegacao {
@@ -22,6 +23,8 @@ export function TelaEntrar() {
   const navegar = useNavigate()
   const localizacao = useLocation()
   const estado = localizacao.state as EstadoNavegacao | null
+  const [avisoEncerramento] = useState(obterAvisoEncerramento)
+  const mensagemNavegacao = avisoEncerramento ?? estado?.mensagem
   const [erroGeral, definirErroGeral] = useState('')
   const {
     register,
@@ -35,6 +38,10 @@ export function TelaEntrar() {
       lembrar: false,
     },
   })
+
+  useEffect(() => {
+    if (avisoEncerramento) limparAvisoEncerramento()
+  }, [avisoEncerramento])
 
   async function autenticar(dados: DadosLogin) {
     definirErroGeral('')
@@ -53,7 +60,7 @@ export function TelaEntrar() {
       tamanhoLogo={44}
     >
       <form className={estilos.formulario} onSubmit={handleSubmit(autenticar)} noValidate>
-        {estado?.mensagem ? <Mensagem tom="sucesso">{estado.mensagem}</Mensagem> : null}
+        {mensagemNavegacao ? <Mensagem tom="sucesso">{mensagemNavegacao}</Mensagem> : null}
         {erroGeral ? <Mensagem tom="erro">{erroGeral}</Mensagem> : null}
         <CampoFormulario
           id="email"

@@ -1,9 +1,9 @@
-export type PapelContexto = 'ADMINISTRADOR'
+export type PapelContexto = 'ADMINISTRADOR' | 'COLABORADOR' | 'DEPENDENTE'
 
 export interface ContextoAtivo {
   id: string
   nome: string
-  tipo: 'PESSOAL'
+  tipo: 'PESSOAL' | 'COMPARTILHADO'
   papel: PapelContexto
 }
 

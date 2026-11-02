@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:integrado": "E2E_REST=true playwright test e2e/integracao-rest.spec.ts",
     "preview": "vite preview"
   },
   "dependencies": {

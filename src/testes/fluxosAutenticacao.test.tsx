@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { App } from '../App'
 import { ProvedorAutenticacao } from '../autenticacao/ProvedorAutenticacao'
+import { ProvedorTema } from '../tema/ProvedorTema'
 import { reiniciarAutenticacaoMock } from '../mocks/ServicoAutenticacaoMock'
 import { servicoAutenticacao } from '../servicos/instanciaAutenticacao'
 
@@ -13,7 +14,9 @@ function renderizarRota(rota: string) {
   return render(
     <MemoryRouter initialEntries={[rota]}>
       <ProvedorAutenticacao>
-        <App />
+        <ProvedorTema>
+          <App />
+        </ProvedorTema>
       </ProvedorAutenticacao>
     </MemoryRouter>,
   )

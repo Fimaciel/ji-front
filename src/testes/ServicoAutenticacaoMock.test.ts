@@ -40,8 +40,9 @@ describe('ServicoAutenticacaoMock', () => {
         ativo: true,
       },
       configuracao: {
+        salarioMensal: 0,
         moeda: 'BRL',
-        notificacoesAtivadas: true,
+        notificacoesAtivas: true,
         tema: 'AUTOMATICO',
       },
       contextoPessoal: {
@@ -173,5 +174,63 @@ describe('ServicoAutenticacaoMock', () => {
       acao: 'LOGOUT',
       usuarioId: 'usuario-demonstracao',
     })
+  })
+
+  it('atualiza perfil, sessão e senha sem alterar o CPF', async () => {
+    await servico.cadastrarUsuario(cadastroAna)
+    await servico.entrar({ email: cadastroAna.email, senha: cadastroAna.senha, lembrar: false })
+
+    const conta = await servico.atualizarPerfil({
+      nome: 'Ana Maria',
+      sobrenome: 'Silva',
+      email: 'ana.nova@email.com',
+      dataNascimento: '1991-02-03',
+      senhaAtual: cadastroAna.senha,
+      novaSenha: 'NovaSenha123',
+      confirmacaoNovaSenha: 'NovaSenha123',
+    })
+
+    expect(conta).toMatchObject({
+      nome: 'Ana Maria',
+      email: 'ana.nova@email.com',
+      cpf: '52998224725',
+    })
+    await servico.encerrarSessao()
+    await expect(servico.entrar({
+      email: 'ana.nova@email.com', senha: 'NovaSenha123', lembrar: false,
+    })).resolves.toMatchObject({ usuario: { nome: 'Ana Maria' } })
+    expect(obterEventosAuditoriaMock()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ acao: 'ATUALIZACAO_PERFIL' }),
+    ]))
+  })
+
+  it('salva e restaura configurações e encerra a conta logicamente', async () => {
+    await servico.entrar({
+      email: EMAIL_DEMONSTRACAO,
+      senha: SENHA_DEMONSTRACAO,
+      lembrar: true,
+    })
+    await expect(servico.atualizarConfiguracao({
+      salarioMensal: 5280.45,
+      moeda: 'BRL',
+      notificacoesAtivas: false,
+    })).resolves.toMatchObject({ salarioMensal: 5280.45, notificacoesAtivas: false })
+    await expect(servico.atualizarTema('ESCURO')).resolves.toMatchObject({ tema: 'ESCURO' })
+    await expect(servico.restaurarConfiguracao()).resolves.toMatchObject({
+      salarioMensal: 0,
+      moeda: 'BRL',
+      notificacoesAtivas: true,
+      tema: 'AUTOMATICO',
+    })
+
+    await servico.encerrarConta()
+    await expect(servico.recuperarSessao()).resolves.toBeNull()
+    await expect(servico.entrar({
+      email: EMAIL_DEMONSTRACAO,
+      senha: SENHA_DEMONSTRACAO,
+      lembrar: false,
+    })).rejects.toMatchObject({ codigo: 'CREDENCIAIS_INVALIDAS' })
+    expect(obterContaUsuarioMock(EMAIL_DEMONSTRACAO)?.usuario.ativo).toBe(false)
+    expect(obterEventosAuditoriaMock().at(-1)).toMatchObject({ acao: 'ENCERRAMENTO_CONTA' })
   })
 })

@@ -6,13 +6,19 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { App } from './App'
 import { ProvedorAutenticacao } from './autenticacao/ProvedorAutenticacao'
+import { ProvedorTema } from './tema/ProvedorTema'
+import { inicializarTema } from './tema/tema'
 import './estilos/globais.css'
+
+inicializarTema()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ProvedorAutenticacao>
-        <App />
+        <ProvedorTema>
+          <App />
+        </ProvedorTema>
       </ProvedorAutenticacao>
     </BrowserRouter>
   </StrictMode>,

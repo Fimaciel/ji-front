@@ -48,3 +48,43 @@ export function IconeSair(propriedades: PropriedadesIcone) {
 export function IconeChevronBaixo(propriedades: PropriedadesIcone) {
   return <IconeBase {...propriedades}><path d="m6 9 6 6 6-6" /></IconeBase>
 }
+
+export function IconeInicio(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></IconeBase>
+}
+
+export function IconeConfiguracoes(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.94 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.57 15 1.7 1.7 0 0 0 3 14H3v-4h.08A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7l2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.57 1.7 1.7 0 0 0 10 3h4v.08A1.7 1.7 0 0 0 15.06 4.6a1.7 1.7 0 0 0 1.88-.34L17 4.2 19.8 7l-.06.06A1.7 1.7 0 0 0 19.4 9c.2.6.76 1 1.4 1H21v4h-.08a1.7 1.7 0 0 0-1.52 1Z" /></IconeBase>
+}
+
+export function IconeUsuario(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></IconeBase>
+}
+
+export function IconeEscudo(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></IconeBase>
+}
+
+export function IconeCarteira(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M4 6h15a2 2 0 0 1 2 2v11H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h13" /><path d="M16 11h5v4h-5a2 2 0 0 1 0-4Z" /></IconeBase>
+}
+
+export function IconeSol(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.41M17.66 6.34l1.41-1.41" /></IconeBase>
+}
+
+export function IconeLua(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" /></IconeBase>
+}
+
+export function IconeMonitor(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></IconeBase>
+}
+
+export function IconeRestaurar(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></IconeBase>
+}
+
+export function IconeAlerta(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M10.3 3.6 2.2 18a2 2 0 0 0 1.8 3h16a2 2 0 0 0 1.8-3L13.7 3.6a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></IconeBase>
+}

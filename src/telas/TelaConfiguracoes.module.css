@@ -1,0 +1,123 @@
+.pagina {
+  width: min(100% - 56px, 940px);
+  margin: 0 auto;
+  padding: 54px 0 80px;
+}
+
+.carregando {
+  min-height: 50dvh;
+  display: grid;
+  place-items: center;
+  color: var(--ji-texto-secundario);
+  font-size: 14px;
+}
+
+.introducao { margin-bottom: 34px; }
+.introducao > p { margin: 0 0 7px; color: var(--ji-primaria); font-size: 12px; font-weight: 600; }
+.introducao h1 { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -.7px; }
+.introducao span { display: block; max-width: 630px; margin-top: 10px; color: var(--ji-texto-secundario); font-size: 14px; line-height: 1.6; }
+
+.pagina > [role="status"],
+.pagina > [role="alert"] { margin-bottom: 20px; }
+
+.secao {
+  margin-top: 20px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 11px;
+  background: var(--ji-fundo);
+}
+
+.cabecalhoSecao {
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--ji-borda-suave);
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.iconeSecao,
+.iconePerigo {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: var(--ji-primaria-suave);
+  color: var(--ji-primaria);
+}
+
+.cabecalhoSecao h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.15px; }
+.cabecalhoSecao p { margin: 5px 0 0; color: var(--ji-texto-secundario); font-size: 12.5px; line-height: 1.45; }
+
+.conteudoSecao { padding: 24px; display: grid; gap: 20px; }
+.gradeDupla { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.gradeFinanceira { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(220px, .7fr); gap: 18px; }
+.campoMetade { width: calc(50% - 9px); }
+.acoesSecao { padding-top: 4px; display: flex; justify-content: flex-end; }
+
+.preferenciaLinha,
+.acaoHorizontal {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.preferenciaLinha { padding: 15px 0; border-top: 1px solid var(--ji-borda-suave); border-bottom: 1px solid var(--ji-borda-suave); }
+.preferenciaLinha div { display: grid; gap: 4px; }
+.preferenciaLinha strong { font-size: 13px; font-weight: 600; }
+.preferenciaLinha span,
+.acaoHorizontal p { margin: 0; color: var(--ji-texto-secundario); font-size: 12.5px; line-height: 1.5; }
+
+.temas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.tema {
+  min-height: 126px;
+  padding: 16px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--ji-fundo-suave);
+  color: var(--ji-texto);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.tema:hover { border-color: var(--ji-texto-terciario); }
+.temaAtivo { border-color: var(--ji-primaria); background: var(--ji-primaria-suave); box-shadow: var(--ji-foco); }
+.tema:disabled { cursor: wait; opacity: .65; }
+.amostraTema { width: 34px; height: 34px; margin-bottom: 13px; border: 1px solid var(--ji-borda); border-radius: 50%; display: grid; place-items: center; background: var(--ji-fundo); color: var(--ji-primaria); }
+.tema strong { font-size: 13px; font-weight: 600; }
+.tema small { margin-top: 4px; color: var(--ji-texto-secundario); font-size: 11px; }
+
+.zonaPerigo { border-color: color-mix(in srgb, var(--ji-negativa) 35%, var(--ji-borda)); }
+.iconePerigo { background: var(--ji-negativa-suave); color: var(--ji-negativa); }
+.botaoPerigo { background: var(--ji-negativa); color: #fff; }
+.botaoPerigo:not(:disabled):hover { background: #dc2626; }
+
+.resumoModal { margin: 0; border-top: 1px solid var(--ji-borda-suave); }
+.resumoModal div { padding: 12px 0; border-bottom: 1px solid var(--ji-borda-suave); display: flex; justify-content: space-between; gap: 16px; }
+.resumoModal dt { color: var(--ji-texto-secundario); font-size: 13px; }
+.resumoModal dd { margin: 0; font-size: 13px; font-weight: 600; }
+
+@media (max-width: 699px) {
+  .pagina { width: auto; padding: 34px 18px 60px; }
+  .introducao h1 { font-size: 27px; }
+  .cabecalhoSecao,
+  .conteudoSecao { padding: 19px; }
+  .gradeDupla,
+  .gradeFinanceira,
+  .temas { grid-template-columns: 1fr; }
+  .campoMetade { width: 100%; }
+  .temas { gap: 9px; }
+  .tema { min-height: 82px; display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto; column-gap: 11px; align-content: center; }
+  .amostraTema { grid-row: 1 / 3; margin: 0; }
+  .preferenciaLinha,
+  .acaoHorizontal { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .acaoHorizontal button { width: 100%; }
+  .acoesSecao button { width: 100%; }
+}

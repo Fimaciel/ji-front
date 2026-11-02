@@ -1,4 +1,13 @@
 import type { ServicoAutenticacao } from '../servicos/ServicoAutenticacao'
+import type { ServicoConta } from '../servicos/ServicoConta'
+import {
+  atualizarUsuarioPersistido,
+  lerSessaoAtual,
+  limparArmazenamentoJi,
+  limparSessao,
+  persistirSessao,
+} from '../servicos/armazenamentoSessao'
+import { ErroApi } from '../tipos/api'
 import {
   ErroAutenticacao,
   type EntradaCadastroUsuario,
@@ -10,8 +19,14 @@ import {
   type SessaoAutenticada,
   type UsuarioResumo,
 } from '../tipos/autenticacao'
+import type {
+  ConfiguracaoConta,
+  ContaUsuario,
+  EntradaAtualizacaoConfiguracao,
+  EntradaAtualizacaoPerfil,
+  TemaUsuario,
+} from '../tipos/conta'
 
-const CHAVE_SESSAO = 'ji:sessao:v1'
 const DURACAO_SESSAO_PERSISTENTE = 7 * 24 * 60 * 60 * 1000
 const DURACAO_TOKEN_REDEFINICAO = 30 * 60 * 1000
 const TOKEN_VALIDO = 'token-demonstracao-valido'
@@ -32,10 +47,11 @@ interface CredencialMock {
   resumoSenha: string
 }
 
-interface ConfiguracaoUsuarioMock {
+interface ConfiguracaoUsuarioMock extends ConfiguracaoConta {
+  salarioMensal: number
   moeda: 'BRL'
-  notificacoesAtivadas: boolean
-  tema: 'AUTOMATICO'
+  notificacoesAtivas: boolean
+  tema: TemaUsuario
 }
 
 interface ContaUsuarioMock {
@@ -52,14 +68,17 @@ interface RegistroToken {
 }
 
 interface EventoAuditoria {
-  acao: 'LOGIN' | 'REDEFINICAO_SENHA' | 'LOGOUT'
+  acao:
+    | 'LOGIN'
+    | 'REDEFINICAO_SENHA'
+    | 'LOGOUT'
+    | 'ATUALIZACAO_PERFIL'
+    | 'ATUALIZACAO_CONFIGURACAO'
+    | 'ALTERACAO_TEMA'
+    | 'RESTAURACAO_CONFIGURACAO'
+    | 'ENCERRAMENTO_CONTA'
   dataHora: string
   usuarioId?: string
-}
-
-interface RegistroSessao {
-  versao: 1
-  sessao: SessaoAutenticada
 }
 
 let usuarios = new Map<string, ContaUsuarioMock>()
@@ -102,8 +121,9 @@ function criarContextoPessoal(usuarioId: string): ContextoAtivo {
 
 function criarConfiguracaoPadrao(): ConfiguracaoUsuarioMock {
   return {
+    salarioMensal: 0,
     moeda: 'BRL',
-    notificacoesAtivadas: true,
+    notificacoesAtivas: true,
     tema: 'AUTOMATICO',
   }
 }
@@ -174,39 +194,7 @@ function criarSessao(conta: ContaUsuarioMock, lembrar: boolean): SessaoAutentica
   }
 }
 
-function persistirSessao(sessao: SessaoAutenticada, lembrar: boolean) {
-  localStorage.removeItem(CHAVE_SESSAO)
-  sessionStorage.removeItem(CHAVE_SESSAO)
-
-  const registro: RegistroSessao = { versao: 1, sessao }
-  const armazenamento = lembrar ? localStorage : sessionStorage
-  armazenamento.setItem(CHAVE_SESSAO, JSON.stringify(registro))
-}
-
-function lerSessao(armazenamento: Storage): SessaoAutenticada | null {
-  const valor = armazenamento.getItem(CHAVE_SESSAO)
-  if (!valor) return null
-
-  try {
-    const registro = JSON.parse(valor) as RegistroSessao
-    if (registro.versao !== 1 || !registro.sessao?.token || !registro.sessao.usuario?.email) {
-      armazenamento.removeItem(CHAVE_SESSAO)
-      return null
-    }
-
-    if (registro.sessao.expiraEm && Date.parse(registro.sessao.expiraEm) <= Date.now()) {
-      armazenamento.removeItem(CHAVE_SESSAO)
-      return null
-    }
-
-    return registro.sessao
-  } catch {
-    armazenamento.removeItem(CHAVE_SESSAO)
-    return null
-  }
-}
-
-export class ServicoAutenticacaoMock implements ServicoAutenticacao {
+export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoConta {
   async cadastrarUsuario(entrada: EntradaCadastroUsuario) {
     await aguardarLatencia()
     const email = normalizarEmail(entrada.email)
@@ -312,6 +300,14 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao {
     const registro = tokens.get(entrada.token)
     if (registro) registro.utilizado = true
     const conta = usuarios.get(estado.email)
+    if (conta) {
+      const sal = criarSalCredencial()
+      conta.credencial = {
+        sal,
+        resumoSenha: await resumirSenha(entrada.novaSenha, sal),
+      }
+      conta.usuario.atualizadoEm = new Date().toISOString()
+    }
     eventosAuditoria.push({
       acao: 'REDEFINICAO_SENHA',
       dataHora: new Date().toISOString(),
@@ -321,26 +317,167 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao {
 
   async recuperarSessao() {
     await aguardarLatencia()
-    return lerSessao(sessionStorage) ?? lerSessao(localStorage)
+    const sessao = lerSessaoAtual()
+    if (!sessao) return null
+    const conta = usuarios.get(sessao.usuario.email)
+    return conta?.usuario.ativo ? sessao : null
   }
 
   async encerrarSessao() {
     await aguardarLatencia()
-    const sessao = lerSessao(sessionStorage) ?? lerSessao(localStorage)
+    const sessao = lerSessaoAtual()
     eventosAuditoria.push({
       acao: 'LOGOUT',
       dataHora: new Date().toISOString(),
       usuarioId: sessao?.usuario.id,
     })
-    sessionStorage.removeItem(CHAVE_SESSAO)
-    localStorage.removeItem(CHAVE_SESSAO)
+    limparSessao()
+  }
+
+  async obterConta(): Promise<ContaUsuario> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    return this.mapearConta(conta)
+  }
+
+  async atualizarPerfil(entrada: EntradaAtualizacaoPerfil): Promise<ContaUsuario> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const senhaCorreta = (await resumirSenha(entrada.senhaAtual, conta.credencial.sal))
+      === conta.credencial.resumoSenha
+    if (!senhaCorreta) {
+      throw new ErroApi('senha-atual-invalida', 'A senha atual informada não confere.')
+    }
+
+    const novoEmail = normalizarEmail(entrada.email)
+    const emailEmUso = usuarios.get(novoEmail)
+    if (emailEmUso && emailEmUso !== conta && emailEmUso.usuario.ativo) {
+      throw new ErroApi('email-em-uso', 'O e-mail informado já está em uso.', {}, 409)
+    }
+    if (entrada.novaSenha && entrada.novaSenha !== entrada.confirmacaoNovaSenha) {
+      throw new ErroApi('senhas-divergentes', 'A nova senha e a confirmação devem ser iguais.')
+    }
+
+    const emailAnterior = conta.usuario.email
+    conta.usuario.nome = entrada.nome.trim()
+    conta.usuario.sobrenome = entrada.sobrenome.trim()
+    conta.usuario.nomeCompleto = `${conta.usuario.nome} ${conta.usuario.sobrenome}`
+    conta.usuario.email = novoEmail
+    conta.usuario.dataNascimento = entrada.dataNascimento || undefined
+    conta.usuario.atualizadoEm = new Date().toISOString()
+    if (entrada.novaSenha) {
+      const sal = criarSalCredencial()
+      conta.credencial = { sal, resumoSenha: await resumirSenha(entrada.novaSenha, sal) }
+    }
+    if (emailAnterior !== novoEmail) {
+      usuarios.delete(emailAnterior)
+      usuarios.set(novoEmail, conta)
+    }
+    const resumo = this.criarResumo(conta.usuario)
+    atualizarUsuarioPersistido(resumo)
+    eventosAuditoria.push({
+      acao: 'ATUALIZACAO_PERFIL',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return this.mapearConta(conta)
+  }
+
+  async atualizarConfiguracao(
+    entrada: EntradaAtualizacaoConfiguracao,
+  ): Promise<ConfiguracaoConta> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    if (entrada.salarioMensal < 0 || !Number.isFinite(entrada.salarioMensal)) {
+      throw new ErroApi('dados-invalidos', 'O salário mensal não pode ser negativo.')
+    }
+    conta.configuracao.salarioMensal = entrada.salarioMensal
+    conta.configuracao.notificacoesAtivas = entrada.notificacoesAtivas
+    conta.usuario.atualizadoEm = new Date().toISOString()
+    eventosAuditoria.push({
+      acao: 'ATUALIZACAO_CONFIGURACAO',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return { ...conta.configuracao }
+  }
+
+  async atualizarTema(tema: TemaUsuario): Promise<ConfiguracaoConta> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    conta.configuracao.tema = tema
+    conta.usuario.atualizadoEm = new Date().toISOString()
+    eventosAuditoria.push({
+      acao: 'ALTERACAO_TEMA',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return { ...conta.configuracao }
+  }
+
+  async restaurarConfiguracao(): Promise<ConfiguracaoConta> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    conta.configuracao = criarConfiguracaoPadrao()
+    conta.usuario.atualizadoEm = new Date().toISOString()
+    eventosAuditoria.push({
+      acao: 'RESTAURACAO_CONFIGURACAO',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return { ...conta.configuracao }
+  }
+
+  async encerrarConta() {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    conta.usuario.ativo = false
+    conta.usuario.atualizadoEm = new Date().toISOString()
+    eventosAuditoria.push({
+      acao: 'ENCERRAMENTO_CONTA',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    limparArmazenamentoJi()
+  }
+
+  private obterContaAutenticada() {
+    const sessao = lerSessaoAtual()
+    const conta = sessao ? usuarios.get(sessao.usuario.email) : undefined
+    if (!conta?.usuario.ativo) {
+      throw new ErroApi('sessao-invalida', 'Faça login novamente.', {}, 401)
+    }
+    return conta
+  }
+
+  private criarResumo(usuario: UsuarioMock): UsuarioResumo {
+    return {
+      id: usuario.id,
+      nome: usuario.nome,
+      sobrenome: usuario.sobrenome,
+      nomeCompleto: usuario.nomeCompleto,
+      email: usuario.email,
+    }
+  }
+
+  private mapearConta(conta: ContaUsuarioMock): ContaUsuario {
+    return {
+      id: conta.usuario.id,
+      nome: conta.usuario.nome,
+      sobrenome: conta.usuario.sobrenome,
+      cpf: conta.usuario.cpf,
+      dataNascimento: conta.usuario.dataNascimento,
+      email: conta.usuario.email,
+      dataCriacao: conta.usuario.criadoEm,
+      dataAtualizacao: conta.usuario.atualizadoEm,
+      configuracao: { ...conta.configuracao },
+    }
   }
 }
 
 export function reiniciarAutenticacaoMock() {
   criarDadosIniciais()
-  sessionStorage.removeItem(CHAVE_SESSAO)
-  localStorage.removeItem(CHAVE_SESSAO)
+  limparArmazenamentoJi()
 }
 
 export function obterEventosAuditoriaMock() {
