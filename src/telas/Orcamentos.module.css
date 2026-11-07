@@ -1,0 +1,105 @@
+.pagina { width: min(100% - 48px, 1180px); margin: 0 auto; padding: 42px 0 64px; }
+.cabecalhoPagina { margin-bottom: 26px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.cabecalhoPagina p { margin: 0 0 5px; color: var(--ji-texto-secundario); font-size: 12px; }
+.cabecalhoPagina h1 { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 600; letter-spacing: -.45px; }
+.cabecalhoPagina > div > span { display: block; margin-top: 7px; color: var(--ji-texto-secundario); font-size: 13px; }
+.acoesCabecalho { display: flex; align-items: flex-end; gap: 9px; }
+.acoesCabecalho label { display: grid; gap: 5px; }
+.acoesCabecalho label span { color: var(--ji-texto-secundario); font-size: 10px; }
+.acoesCabecalho input { min-height: 42px; padding: 0 10px; border: 1px solid var(--ji-borda); border-radius: 8px; background: var(--ji-fundo); color: var(--ji-texto); font-size: 12px; }
+
+.resumo { margin: 22px 0 32px; border-top: 2px solid var(--ji-texto); border-bottom: 1px solid var(--ji-borda); display: grid; grid-template-columns: minmax(320px, 1.2fr) 1fr; background: var(--ji-fundo); }
+.medidorGeral { min-height: 150px; padding: 23px 26px; border-right: 1px solid var(--ji-borda); display: flex; align-items: center; gap: 20px; }
+.anel { --progresso: 0deg; width: 84px; height: 84px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; background: conic-gradient(var(--ji-positiva) var(--progresso), var(--ji-trilho) 0); position: relative; }
+.anel::before { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: var(--ji-fundo); }
+.anel strong { z-index: 1; font-size: 15px; font-weight: 600; }
+.medidorGeral small { color: var(--ji-texto-secundario); font-size: 10px; }
+.medidorGeral h2 { margin: 5px 0 0; font-size: 25px; font-weight: 600; letter-spacing: -.5px; }
+.medidorGeral p { margin: 4px 0 0; color: var(--ji-texto-secundario); font-size: 11px; }
+.resumoATENCAO .anel { background: conic-gradient(var(--ji-aviso) var(--progresso), var(--ji-trilho) 0); }
+.resumoEXCEDIDO .anel { background: conic-gradient(var(--ji-negativa) var(--progresso), var(--ji-trilho) 0); }
+.resumo dl { margin: 0; padding: 20px 27px; display: grid; grid-template-columns: 1fr 1fr; align-content: center; gap: 20px; }
+.resumo dl div:first-child { grid-column: 1 / -1; padding-bottom: 15px; border-bottom: 1px solid var(--ji-borda-suave); }
+.resumo dt { color: var(--ji-texto-secundario); font-size: 10px; }
+.resumo dd { margin: 6px 0 0; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.lista { border-top: 2px solid var(--ji-texto); }
+.lista > header,
+.lista article { display: grid; grid-template-columns: minmax(190px, 1fr) minmax(220px, 1.2fr) 190px 78px; align-items: center; gap: 18px; }
+.lista > header { padding: 11px 14px; border-bottom: 1px solid var(--ji-borda); color: var(--ji-texto-secundario); font-size: 10px; letter-spacing: .35px; }
+.lista > header span:last-child { text-align: right; }
+.lista article { min-height: 82px; padding: 12px 14px; border-bottom: 1px solid var(--ji-borda-suave); }
+.categoria { display: flex; align-items: center; gap: 11px; }
+.categoria > span { width: 32px; height: 32px; border-radius: 7px; display: grid; place-items: center; background: var(--ji-primaria-suave); color: var(--ji-primaria); }
+.categoria > div { display: flex; flex-direction: column; gap: 4px; }
+.categoria strong { font-size: 13px; font-weight: 600; }
+.categoria small { color: var(--ji-texto-secundario); font-size: 10px; }
+.consumo > div { display: flex; justify-content: space-between; gap: 10px; }
+.consumo strong { font-size: 12px; font-weight: 600; }
+.consumo div > span { color: var(--ji-texto-secundario); font-size: 10px; }
+.trilho { height: 6px; margin-top: 8px; border-radius: 999px; display: block; overflow: hidden; background: var(--ji-trilho); }
+.trilho i { height: 100%; display: block; border-radius: inherit; background: var(--ji-positiva); }
+.linhaATENCAO .trilho i { background: var(--ji-aviso); }
+.linhaEXCEDIDO .trilho i { background: var(--ji-negativa); }
+.situacao { width: fit-content; padding: 5px 8px; border: 1px solid var(--ji-borda); border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; color: var(--ji-texto-secundario); font-size: 10px; }
+.linhaATENCAO .situacao { border-color: var(--ji-aviso); background: var(--ji-aviso-suave); color: var(--ji-aviso); }
+.linhaEXCEDIDO .situacao { border-color: var(--ji-negativa); background: var(--ji-negativa-suave); color: var(--ji-negativa); }
+.acoesLinha { white-space: nowrap; text-align: right; }
+.acoesLinha button,
+.cabecalhoModal button { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 7px; display: inline-grid; place-items: center; background: transparent; color: var(--ji-texto-secundario); cursor: pointer; }
+.acoesLinha button:hover,
+.cabecalhoModal button:hover { background: var(--ji-fundo-sutil); color: var(--ji-texto); }
+
+.estado { min-height: 300px; padding: 48px 20px; border-top: 1px solid var(--ji-borda-suave); border-bottom: 1px solid var(--ji-borda-suave); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: var(--ji-texto-secundario); font-size: 13px; text-align: center; }
+.estado strong { color: var(--ji-texto); font-size: 16px; font-weight: 600; }
+.estado button { margin-top: 10px; }
+
+.sobreposicao { position: fixed; z-index: 80; inset: 0; padding: 24px; display: grid; place-items: center; background: rgb(15 20 30 / 48%); }
+.modal { width: min(100%, 520px); max-height: calc(100dvh - 48px); overflow-y: auto; border: 1px solid var(--ji-borda); border-radius: 12px; background: var(--ji-fundo); box-shadow: 0 24px 72px rgb(15 20 30 / 24%); }
+.cabecalhoModal { padding: 19px 22px 16px; border-bottom: 1px solid var(--ji-borda-suave); display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.cabecalhoModal h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.cabecalhoModal p { margin: 4px 0 0; color: var(--ji-texto-secundario); font-size: 12px; }
+.corpoModal { padding: 21px 22px; display: grid; gap: 16px; }
+.rodapeModal { padding: 13px 22px; border-top: 1px solid var(--ji-borda-suave); display: flex; justify-content: flex-end; gap: 8px; }
+.gradeCampos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campo { display: grid; gap: 6px; }
+.campo > span { font-size: 12px; font-weight: 500; }
+.campo > input,
+.campo > select,
+.valor { width: 100%; min-height: 42px; padding: 0 11px; border: 1px solid var(--ji-borda); border-radius: 8px; background: var(--ji-fundo-suave); color: var(--ji-texto); font-size: 13px; }
+.campo > input:focus,
+.campo > select:focus,
+.valor:focus-within { border-color: var(--ji-primaria); box-shadow: var(--ji-foco); outline: 0; }
+.campo > [aria-invalid="true"],
+.valor:has(input[aria-invalid="true"]) { border-color: var(--ji-negativa); }
+.campo small { color: #c8312f; font-size: 11px; line-height: 1.35; }
+.valor { display: flex; align-items: center; gap: 7px; }
+.valor > span { color: var(--ji-texto-secundario); font-size: 12px; }
+.valor input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ji-texto); }
+
+@media (max-width: 850px) {
+  .resumo { grid-template-columns: 1fr; }
+  .medidorGeral { border-right: 0; border-bottom: 1px solid var(--ji-borda); }
+  .lista > header { display: none; }
+  .lista article { grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) auto; }
+  .situacao { grid-column: 2; }
+  .acoesLinha { grid-column: 3; grid-row: 1 / 3; }
+}
+
+@media (max-width: 719px) {
+  .pagina { width: auto; padding: 28px 16px 86px; }
+  .cabecalhoPagina { align-items: flex-start; flex-direction: column; }
+  .acoesCabecalho { width: 100%; }
+  .acoesCabecalho label { flex: 1; }
+  .acoesCabecalho input { width: 100%; }
+  .acoesCabecalho > button { width: 46px; min-width: 46px; padding: 0; font-size: 0; }
+  .resumo { margin-top: 18px; }
+  .medidorGeral { min-height: 132px; padding: 20px 16px; }
+  .anel { width: 72px; height: 72px; }
+  .resumo dl { padding: 18px 16px; }
+  .lista article { padding: 16px 2px; grid-template-columns: minmax(0, 1fr) auto; gap: 13px; }
+  .consumo { grid-column: 1 / -1; grid-row: 2; }
+  .situacao { grid-column: 1; grid-row: 3; }
+  .acoesLinha { grid-column: 2; grid-row: 1; }
+  .gradeCampos { grid-template-columns: 1fr; }
+}

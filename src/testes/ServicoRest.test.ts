@@ -125,4 +125,53 @@ describe('ServicoRest', () => {
       aceitouTermos: true,
     })).rejects.toMatchObject({ codigo: 'EMAIL_EM_USO' })
   })
+
+  it('mapeia dashboard e contratos de orçamento com bearer', async () => {
+    fetchMock
+      .mockResolvedValueOnce(respostaJson(respostaAutenticacao))
+      .mockResolvedValueOnce(respostaJson({
+        mesReferencia: '2026-11',
+        totalEntradas: 3500,
+        totalSaidas: 184.5,
+        saldo: 3315.5,
+        fluxoDiario: [{
+          data: '2026-11-02', entradas: 3500, saidas: 0, saldoAcumulado: 3500,
+        }],
+        principaisCategorias: [{
+          categoriaId: 6, categoriaNome: 'Mercado', total: 184.5, percentual: 100,
+        }],
+        transacoesRecentes: [],
+        geradoEm: '2026-11-06T12:00:00Z',
+      }))
+      .mockResolvedValueOnce(respostaJson({
+        mesReferencia: '2026-11',
+        totalLimite: 220,
+        totalConsumido: 184.5,
+        percentualConsumido: 83.86,
+        itens: [{
+          id: 9,
+          categoria: { id: 6, nome: 'Mercado', tipo: 'PERSONALIZADA' },
+          valorLimite: 220,
+          valorConsumido: 184.5,
+          percentualConsumido: 83.86,
+          situacao: 'ATENCAO',
+          mesReferencia: '2026-11',
+        }],
+      }))
+    await servico.entrar({ email: 'filipe@example.com', senha: 'senha-segura', lembrar: false })
+
+    await expect(servico.obterDashboard('2026-11')).resolves.toMatchObject({
+      saldo: 3315.5,
+      principaisCategorias: [{ categoriaId: '6', categoriaNome: 'Mercado' }],
+    })
+    await expect(servico.listarOrcamentos('2026-11')).resolves.toMatchObject({
+      totalLimite: 220,
+      itens: [{ id: '9', situacao: 'ATENCAO' }],
+    })
+
+    expect(fetchMock.mock.calls[1][0]).toBe('http://api.ji.test/api/v1/dashboard?mes=2026-11')
+    expect(fetchMock.mock.calls[2][0]).toBe('http://api.ji.test/api/v1/orcamentos?mes=2026-11')
+    expect((fetchMock.mock.calls[2][1]?.headers as Headers).get('Authorization'))
+      .toBe('Bearer jwt-teste')
+  })
 })

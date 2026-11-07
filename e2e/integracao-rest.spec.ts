@@ -60,6 +60,35 @@ test.describe('fluxo REST integrado com back-end e Mailpit', () => {
     await page.getByRole('radio', { name: /Escuro/ }).click()
     await expect(page.locator('html')).toHaveAttribute('data-tema', 'escuro')
 
+    const categoria = `Cursos ${Date.now()}`
+    await page.getByRole('link', { name: 'Categorias' }).click()
+    await page.getByRole('button', { name: 'Nova categoria' }).click()
+    let modal = page.getByRole('dialog', { name: 'Nova categoria' })
+    await modal.getByLabel('Nome').fill(categoria)
+    await modal.getByRole('button', { name: 'Criar categoria' }).click()
+    await expect(page.getByText(categoria, { exact: true })).toBeVisible()
+
+    await page.getByRole('link', { name: 'Transações' }).click()
+    await page.getByRole('button', { name: 'Nova transação' }).click()
+    modal = page.getByRole('dialog', { name: 'Nova transação' })
+    await modal.getByLabel('Valor').fill('120,50')
+    await modal.getByLabel('Categoria').selectOption({ label: categoria })
+    await modal.getByLabel('Descrição').fill('Curso integrado')
+    await modal.getByRole('button', { name: 'Salvar transação' }).click()
+    await expect(page.getByText('Curso integrado')).toBeVisible()
+
+    await page.getByRole('link', { name: 'Orçamentos' }).click()
+    await page.getByRole('button', { name: 'Novo orçamento' }).click()
+    modal = page.getByRole('dialog', { name: 'Novo orçamento' })
+    await modal.getByLabel('Categoria').selectOption({ label: categoria })
+    await modal.getByLabel('Limite mensal').fill('100,00')
+    await modal.getByRole('button', { name: 'Criar orçamento' }).click()
+    await expect(page.getByText('Limite excedido')).toBeVisible()
+
+    await page.getByRole('link', { name: 'Visão geral' }).click()
+    await expect(page.getByText('Curso integrado')).toBeVisible()
+    await expect(page.getByText('R$ 120,50').last()).toBeVisible()
+
     await page.getByLabel('Abrir menu do usuário').click()
     await page.getByRole('button', { name: 'Sair' }).click()
     await page.goto('/recuperar-senha')

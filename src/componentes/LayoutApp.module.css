@@ -179,7 +179,7 @@
 
 @media (max-width: 599px) {
   .cabecalho { min-height: 66px; padding: 0 14px; }
-  .marca span,
+  .nomeMarca,
   .nomeCurto,
   .contexto small { display: none; }
   .contexto { min-height: 42px; padding: 0 10px; }
@@ -197,7 +197,11 @@
     border-right: 0;
     border-bottom: 1px solid var(--ji-borda-suave);
   }
-  .barraLateral nav { grid-template-columns: 1fr 1fr; }
+  .barraLateral nav { grid-template-columns: repeat(5, 1fr); }
   .itemNavegacao { min-height: 40px; gap: 7px; }
   .itemNavegacao span { display: inline; }
+}
+
+@media (max-width: 459px) {
+  .itemNavegacao span { display: none; }
 }

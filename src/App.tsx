@@ -7,6 +7,9 @@ import { TelaEntrar } from './telas/TelaEntrar'
 import { TelaRecuperarSenha } from './telas/TelaRecuperarSenha'
 import { TelaRedefinirSenha } from './telas/TelaRedefinirSenha'
 import { TelaConfiguracoes } from './telas/TelaConfiguracoes'
+import { TelaCategorias } from './telas/TelaCategorias'
+import { TelaTransacoes } from './telas/TelaTransacoes'
+import { TelaOrcamentos } from './telas/TelaOrcamentos'
 
 export function App() {
   return (
@@ -18,6 +21,9 @@ export function App() {
       <Route path="/redefinir-senha" element={<RotaPublica><TelaRedefinirSenha /></RotaPublica>} />
       <Route path="/app" element={<RotaProtegida><LayoutApp /></RotaProtegida>}>
         <Route index element={<TelaApp />} />
+        <Route path="transacoes" element={<TelaTransacoes />} />
+        <Route path="orcamentos" element={<TelaOrcamentos />} />
+        <Route path="categorias" element={<TelaCategorias />} />
         <Route path="configuracoes" element={<TelaConfiguracoes />} />
       </Route>
       <Route path="*" element={<Navigate to="/entrar" replace />} />

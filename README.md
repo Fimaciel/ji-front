@@ -1,8 +1,10 @@
-# Ji Front — Sprints 1 e 2
+# Ji Front — Sprints 1 a 4
 
 Interface React e TypeScript do Gerenciador Financeiro Pessoal Ji. A aplicação
 consome a API REST por padrão e inclui autenticação, recuperação de senha,
-layout interno responsivo e a tela unificada de configurações da Sprint 2.
+layout interno responsivo, a tela unificada de configurações da Sprint 2 e o
+gerenciamento de categorias e transações da Sprint 3, além do dashboard e dos
+orçamentos mensais por categoria da Sprint 4.
 
 ## Configuração e execução
 
@@ -50,6 +52,35 @@ O tema fica em um cache local independente da sessão para evitar flash visual.
 No modo automático, a aplicação acompanha `prefers-color-scheme` em tempo
 real e reconcilia o cache com a preferência retornada pelo servidor.
 
+## Sprint 3
+
+As rotas protegidas `/app/transacoes` e `/app/categorias` oferecem:
+
+- cadastro, edição e exclusão de entradas e saídas;
+- filtros por descrição, período, tipo e categoria, com paginação;
+- categorias padrão protegidas e categorias personalizadas editáveis;
+- validação de valor positivo, data não futura, categoria e descrição;
+- adaptação para desktop, tablet e celular, nos temas claro e escuro.
+
+O modo mock possui dados demonstrativos para essas telas. No modo REST, todas
+as operações usam o contexto ativo informado pela sessão autenticada.
+
+## Sprint 4
+
+As rotas protegidas `/app` e `/app/orcamentos` oferecem:
+
+- saldo, entradas e saídas do mês no dashboard;
+- gráfico do fluxo acumulado, principais categorias e transações recentes;
+- atualização automática do dashboard a cada dois segundos;
+- criação, edição e exclusão de um limite mensal por categoria;
+- consumo calculado pelas saídas do mês, com alerta visual a partir de 80% e
+  destaque quando o limite é excedido;
+- estados vazios e adaptação para desktop, tablet e celular.
+
+O mock inclui transações e orçamentos demonstrativos. No modo REST, os dados
+são sempre calculados no contexto ativo e o mês é enviado no formato
+`AAAA-MM`.
+
 ## Verificações
 
 ```bash
@@ -72,4 +103,6 @@ npm run test:e2e:integrado
 
 A matriz consolidada de requisitos e evidências está no repositório do
 back-end, em
-[`docs/sprint-2-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-2-rastreabilidade.md).
+[`docs/sprint-3-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-3-rastreabilidade.md).
+A Sprint 4 está registrada em
+[`docs/sprint-4-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-4-rastreabilidade.md).

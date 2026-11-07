@@ -54,7 +54,7 @@ describe('fluxos de autenticação', () => {
     await pessoa.type(await screen.findByLabelText('Senha'), SENHA_DEMONSTRACAO)
     await pessoa.click(screen.getByRole('button', { name: 'Entrar' }))
 
-    expect(await screen.findByRole('heading', { name: 'Sua conta está pronta' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Visão geral' })).toBeInTheDocument()
     expect(screen.getByLabelText('Contexto ativo')).toHaveTextContent('Pessoal')
 
     await pessoa.click(screen.getByLabelText('Abrir menu do usuário'))
@@ -149,10 +149,10 @@ describe('fluxos de autenticação', () => {
     await screen.findByRole('heading', { name: 'Entrar na sua conta' })
     await pessoa.type(screen.getByLabelText('Senha'), SENHA_DEMONSTRACAO)
     await pessoa.click(screen.getByRole('button', { name: 'Entrar' }))
-    await screen.findByRole('heading', { name: 'Sua conta está pronta' })
+    await screen.findByRole('heading', { name: 'Visão geral' })
     primeiraNavegacao.unmount()
 
     renderizarRota('/outra-rota')
-    expect(await screen.findByRole('heading', { name: 'Sua conta está pronta' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Visão geral' })).toBeInTheDocument()
   })
 })

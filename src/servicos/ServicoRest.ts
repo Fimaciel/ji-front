@@ -1,5 +1,6 @@
 import type { ServicoAutenticacao } from './ServicoAutenticacao'
 import type { ServicoConta } from './ServicoConta'
+import type { ServicoFinanceiro } from './ServicoFinanceiro'
 import {
   atualizarUsuarioPersistido,
   lerSessaoAtual,
@@ -26,6 +27,22 @@ import type {
   EntradaAtualizacaoPerfil,
   TemaUsuario,
 } from '../tipos/conta'
+import type {
+  Categoria,
+  CategoriaDashboard,
+  DashboardResumo,
+  EntradaOrcamento,
+  EntradaTransacao,
+  FiltrosTransacao,
+  FluxoDiario,
+  Orcamento,
+  PaginaTransacoes,
+  ResumoOrcamentos,
+  SituacaoOrcamento,
+  Transacao,
+  TipoCategoria,
+  TipoTransacao,
+} from '../tipos/financeiro'
 
 interface UsuarioApi {
   id: number
@@ -76,6 +93,70 @@ interface ProblemaApi {
   campos?: Record<string, string>
 }
 
+interface CategoriaApi {
+  id: number
+  nome: string
+  tipo: TipoCategoria
+}
+
+interface TransacaoApi {
+  id: number
+  tipo: TipoTransacao
+  valor: number
+  data: string
+  descricao: string
+  categoria: CategoriaApi
+  dataCriacao: string
+  dataAtualizacao: string
+}
+
+interface PaginaTransacoesApi {
+  itens: TransacaoApi[]
+  pagina: number
+  tamanho: number
+  totalItens: number
+  totalPaginas: number
+}
+
+interface OrcamentoApi {
+  id: number
+  categoria: CategoriaApi
+  valorLimite: number
+  valorConsumido: number
+  percentualConsumido: number
+  situacao: SituacaoOrcamento
+  mesReferencia: string
+}
+
+interface ResumoOrcamentosApi {
+  mesReferencia: string
+  totalLimite: number
+  totalConsumido: number
+  percentualConsumido: number
+  itens: OrcamentoApi[]
+}
+
+interface FluxoDiarioApi extends Omit<FluxoDiario, 'entradas' | 'saidas' | 'saldoAcumulado'> {
+  entradas: number
+  saidas: number
+  saldoAcumulado: number
+}
+
+interface CategoriaDashboardApi extends Omit<CategoriaDashboard, 'categoriaId'> {
+  categoriaId: number
+}
+
+interface DashboardApi {
+  mesReferencia: string
+  totalEntradas: number
+  totalSaidas: number
+  saldo: number
+  fluxoDiario: FluxoDiarioApi[]
+  principaisCategorias: CategoriaDashboardApi[]
+  transacoesRecentes: TransacaoApi[]
+  geradoEm: string
+}
+
 const DURACAO_TOKEN_REDEFINICAO = 30 * 60 * 1000
 
 function usuarioResumo(usuario: UsuarioApi): UsuarioResumo {
@@ -110,7 +191,31 @@ function mapearConta(conta: ContaApi): ContaUsuario {
   }
 }
 
-export class ServicoRest implements ServicoAutenticacao, ServicoConta {
+function mapearCategoria(categoria: CategoriaApi): Categoria {
+  return { ...categoria, id: String(categoria.id) }
+}
+
+function mapearTransacao(transacao: TransacaoApi): Transacao {
+  return {
+    ...transacao,
+    id: String(transacao.id),
+    valor: Number(transacao.valor),
+    categoria: mapearCategoria(transacao.categoria),
+  }
+}
+
+function mapearOrcamento(orcamento: OrcamentoApi): Orcamento {
+  return {
+    ...orcamento,
+    id: String(orcamento.id),
+    categoria: mapearCategoria(orcamento.categoria),
+    valorLimite: Number(orcamento.valorLimite),
+    valorConsumido: Number(orcamento.valorConsumido),
+    percentualConsumido: Number(orcamento.percentualConsumido),
+  }
+}
+
+export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFinanceiro {
   private readonly urlBase: string
 
   constructor(urlBase: string) {
@@ -271,6 +376,152 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta {
   async encerrarConta() {
     await this.requisitar('/api/v1/usuarios/me', { method: 'DELETE' }, true)
     limparArmazenamentoJi()
+  }
+
+  async listarCategorias() {
+    const categorias = await this.requisitar<CategoriaApi[]>('/api/v1/categorias', {}, true)
+    return categorias.map(mapearCategoria)
+  }
+
+  async criarCategoria(nome: string) {
+    const categoria = await this.requisitar<CategoriaApi>('/api/v1/categorias', {
+      method: 'POST',
+      body: JSON.stringify({ nome }),
+    }, true)
+    return mapearCategoria(categoria)
+  }
+
+  async editarCategoria(categoriaId: string, nome: string) {
+    const categoria = await this.requisitar<CategoriaApi>(
+      `/api/v1/categorias/${encodeURIComponent(categoriaId)}`,
+      { method: 'PUT', body: JSON.stringify({ nome }) },
+      true,
+    )
+    return mapearCategoria(categoria)
+  }
+
+  async excluirCategoria(categoriaId: string) {
+    await this.requisitar(
+      `/api/v1/categorias/${encodeURIComponent(categoriaId)}`,
+      { method: 'DELETE' },
+      true,
+    )
+  }
+
+  async listarTransacoes(filtros: FiltrosTransacao = {}): Promise<PaginaTransacoes> {
+    const parametros = new URLSearchParams()
+    parametros.set('pagina', String(filtros.pagina ?? 0))
+    if (filtros.dataInicial) parametros.set('dataInicial', filtros.dataInicial)
+    if (filtros.dataFinal) parametros.set('dataFinal', filtros.dataFinal)
+    if (filtros.tipo) parametros.set('tipo', filtros.tipo)
+    if (filtros.categoriaId) parametros.set('categoriaId', filtros.categoriaId)
+    if (filtros.busca?.trim()) parametros.set('busca', filtros.busca.trim())
+    const pagina = await this.requisitar<PaginaTransacoesApi>(
+      `/api/v1/transacoes?${parametros.toString()}`,
+      {},
+      true,
+    )
+    return { ...pagina, itens: pagina.itens.map(mapearTransacao) }
+  }
+
+  async criarTransacao(entrada: EntradaTransacao) {
+    const transacao = await this.requisitar<TransacaoApi>('/api/v1/transacoes', {
+      method: 'POST',
+      body: JSON.stringify({ ...entrada, categoriaId: Number(entrada.categoriaId) }),
+    }, true)
+    return mapearTransacao(transacao)
+  }
+
+  async editarTransacao(transacaoId: string, entrada: EntradaTransacao) {
+    const transacao = await this.requisitar<TransacaoApi>(
+      `/api/v1/transacoes/${encodeURIComponent(transacaoId)}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ ...entrada, categoriaId: Number(entrada.categoriaId) }),
+      },
+      true,
+    )
+    return mapearTransacao(transacao)
+  }
+
+  async excluirTransacao(transacaoId: string) {
+    await this.requisitar(
+      `/api/v1/transacoes/${encodeURIComponent(transacaoId)}`,
+      { method: 'DELETE' },
+      true,
+    )
+  }
+
+  async obterDashboard(mes?: string): Promise<DashboardResumo> {
+    const parametros = mes ? `?mes=${encodeURIComponent(mes)}` : ''
+    const dashboard = await this.requisitar<DashboardApi>(
+      `/api/v1/dashboard${parametros}`,
+      {},
+      true,
+    )
+    return {
+      ...dashboard,
+      totalEntradas: Number(dashboard.totalEntradas),
+      totalSaidas: Number(dashboard.totalSaidas),
+      saldo: Number(dashboard.saldo),
+      fluxoDiario: dashboard.fluxoDiario.map((dia) => ({
+        ...dia,
+        entradas: Number(dia.entradas),
+        saidas: Number(dia.saidas),
+        saldoAcumulado: Number(dia.saldoAcumulado),
+      })),
+      principaisCategorias: dashboard.principaisCategorias.map((categoria) => ({
+        ...categoria,
+        categoriaId: String(categoria.categoriaId),
+        total: Number(categoria.total),
+        percentual: Number(categoria.percentual),
+      })),
+      transacoesRecentes: dashboard.transacoesRecentes.map(mapearTransacao),
+    }
+  }
+
+  async listarOrcamentos(mes?: string): Promise<ResumoOrcamentos> {
+    const parametros = mes ? `?mes=${encodeURIComponent(mes)}` : ''
+    const resumo = await this.requisitar<ResumoOrcamentosApi>(
+      `/api/v1/orcamentos${parametros}`,
+      {},
+      true,
+    )
+    return {
+      ...resumo,
+      totalLimite: Number(resumo.totalLimite),
+      totalConsumido: Number(resumo.totalConsumido),
+      percentualConsumido: Number(resumo.percentualConsumido),
+      itens: resumo.itens.map(mapearOrcamento),
+    }
+  }
+
+  async criarOrcamento(entrada: EntradaOrcamento) {
+    const orcamento = await this.requisitar<OrcamentoApi>('/api/v1/orcamentos', {
+      method: 'POST',
+      body: JSON.stringify({ ...entrada, categoriaId: Number(entrada.categoriaId) }),
+    }, true)
+    return mapearOrcamento(orcamento)
+  }
+
+  async editarOrcamento(orcamentoId: string, entrada: EntradaOrcamento) {
+    const orcamento = await this.requisitar<OrcamentoApi>(
+      `/api/v1/orcamentos/${encodeURIComponent(orcamentoId)}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ ...entrada, categoriaId: Number(entrada.categoriaId) }),
+      },
+      true,
+    )
+    return mapearOrcamento(orcamento)
+  }
+
+  async excluirOrcamento(orcamentoId: string) {
+    await this.requisitar(
+      `/api/v1/orcamentos/${encodeURIComponent(orcamentoId)}`,
+      { method: 'DELETE' },
+      true,
+    )
   }
 
   private async requisitar<T = void>(

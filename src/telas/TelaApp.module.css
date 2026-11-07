@@ -1,266 +1,166 @@
-.aplicacao {
-  min-height: 100dvh;
-  background: var(--ji-fundo);
-  color: var(--ji-texto);
+.pagina {
+  width: min(100% - 48px, 1220px);
+  margin: 0 auto;
+  padding: 38px 0 64px;
 }
 
-.cabecalho {
-  min-height: 64px;
-  padding: 0 32px;
-  border-top: 2px solid var(--ji-primaria);
-  border-bottom: 1px solid var(--ji-borda-suave);
+.cabecalhoPagina {
+  margin-bottom: 26px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  background: var(--ji-fundo);
 }
 
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ji-primaria);
-  font-size: 22px;
-  font-weight: 600;
+.cabecalhoPagina p,
+.painelFluxo header p,
+.painelCategorias header p,
+.recentes header p {
+  margin: 0 0 5px;
+  color: var(--ji-texto-secundario);
+  font-size: 11px;
+  letter-spacing: .2px;
 }
 
-.acoesCabecalho {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.cabecalhoPagina h1 { margin: 0; font-size: clamp(26px, 3vw, 33px); font-weight: 600; letter-spacing: -.6px; }
+.cabecalhoPagina > div > span { display: block; margin-top: 7px; color: var(--ji-texto-secundario); font-size: 12px; }
 
-.contexto {
+.acoesCabecalho { display: flex; align-items: flex-end; gap: 9px; }
+.acoesCabecalho label { display: grid; gap: 5px; }
+.acoesCabecalho label span { color: var(--ji-texto-secundario); font-size: 10px; }
+.acoesCabecalho input {
   min-height: 42px;
-  padding: 6px 12px;
+  padding: 0 10px;
   border: 1px solid var(--ji-borda);
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   background: var(--ji-fundo);
+  color: var(--ji-texto);
+  font-size: 12px;
 }
 
-.contexto span {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.contexto small {
-  color: var(--ji-texto-secundario);
-  font-size: 9px;
-  letter-spacing: 0.3px;
-}
-
-.menuUsuario {
-  position: relative;
-}
-
-.menuUsuario summary {
+.acaoPrimaria {
   min-height: 42px;
-  padding: 4px 8px;
+  padding: 0 16px;
   border-radius: 8px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--ji-texto);
-  cursor: pointer;
-  list-style: none;
-}
-
-.menuUsuario summary::-webkit-details-marker {
-  display: none;
-}
-
-.menuUsuario[open] summary,
-.menuUsuario summary:hover {
-  background: var(--ji-fundo-sutil);
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #a3a3a3;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.nomeCurto {
+  background: var(--ji-primaria);
+  color: white;
   font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
 }
+.acaoPrimaria:hover { background: var(--ji-primaria-hover); }
 
-.menuFlutuante {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 220px;
-  padding: 8px;
-  border: 1px solid var(--ji-borda-suave);
-  border-radius: 10px;
+.avisoErro { margin-bottom: 16px; padding: 11px 13px; border: 1px solid var(--ji-negativa); border-radius: 8px; background: var(--ji-negativa-suave); color: var(--ji-negativa); font-size: 12px; }
+.carregando { min-height: 420px; display: grid; place-items: center; color: var(--ji-texto-secundario); font-size: 13px; }
+
+.faixaResumo {
+  border-top: 1px solid var(--ji-borda);
+  border-bottom: 1px solid var(--ji-borda);
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) repeat(3, 1fr);
   background: var(--ji-fundo);
-  box-shadow: var(--ji-sombra-menu);
 }
 
-.identidade {
-  margin-bottom: 6px;
-  padding: 10px;
-  border-radius: 7px;
-  display: flex;
-  flex-direction: column;
-  background: var(--ji-primaria-suave);
+.saldoPrincipal,
+.indicador { min-height: 124px; padding: 23px 25px; display: flex; flex-direction: column; justify-content: center; }
+.saldoPrincipal { border-right: 1px solid var(--ji-borda); }
+.saldoPrincipal > span { color: var(--ji-texto-secundario); font-size: 11px; }
+.saldoPrincipal strong { margin-top: 8px; font-size: clamp(25px, 3vw, 33px); font-weight: 600; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
+.saldoPrincipal small { margin-top: 4px; color: var(--ji-texto-terciario); font-size: 10px; text-transform: capitalize; }
+.saldoPrincipal .negativo { color: var(--ji-negativa); }
+
+.indicador { border-right: 1px solid var(--ji-borda-suave); }
+.indicador:last-child { border-right: 0; }
+.indicador > span { display: flex; align-items: center; gap: 7px; color: var(--ji-texto-secundario); font-size: 11px; }
+.indicador > span i { width: 25px; height: 25px; border-radius: 6px; display: inline-grid; place-items: center; font-style: normal; }
+.indicador strong { margin-top: 10px; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.iconeEntrada { background: var(--ji-positiva-suave); color: var(--ji-positiva); }
+.iconeSaida { background: var(--ji-negativa-suave); color: var(--ji-negativa); }
+.iconeTaxa { background: var(--ji-primaria-suave); color: var(--ji-primaria); font-size: 10px; font-weight: 700; }
+
+.gradeAnalise { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, .8fr); gap: 28px; }
+.painelFluxo,
+.painelCategorias,
+.recentes { border-top: 2px solid var(--ji-texto); background: var(--ji-fundo); }
+.painelFluxo > header,
+.painelCategorias > header,
+.recentes > header { padding: 18px 0 15px; border-bottom: 1px solid var(--ji-borda-suave); }
+.painelFluxo > header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+.painelFluxo h2,
+.painelCategorias h2,
+.recentes h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.painelFluxo header > span { color: var(--ji-texto-terciario); font-size: 10px; }
+
+.grafico { padding: 20px 0 8px; }
+.grafico svg { width: 100%; height: 220px; overflow: visible; }
+.grafico line { stroke: var(--ji-borda-suave); stroke-width: 1; }
+.grafico polyline { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.linhaEntradas { stroke: var(--ji-positiva); }
+.linhaSaidas { stroke: var(--ji-primaria); }
+.legendaGrafico { margin-top: 9px; display: flex; align-items: center; gap: 16px; color: var(--ji-texto-secundario); font-size: 10px; }
+.legendaGrafico span { display: inline-flex; align-items: center; gap: 6px; }
+.legendaGrafico i { width: 16px; height: 2px; }
+.marcaEntradas { background: var(--ji-positiva); }
+.marcaSaidas { background: var(--ji-primaria); }
+.legendaGrafico small { margin-left: auto; color: var(--ji-texto-terciario); }
+.estadoGrafico { min-height: 256px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: var(--ji-texto-secundario); text-align: center; }
+.estadoGrafico strong { color: var(--ji-texto); font-size: 13px; }
+.estadoGrafico span { font-size: 11px; }
+
+.painelCategorias ol { margin: 0; padding: 4px 0 0; list-style: none; }
+.painelCategorias li { padding: 13px 0; border-bottom: 1px solid var(--ji-borda-suave); }
+.painelCategorias li > div { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+.painelCategorias li span { display: flex; align-items: center; gap: 8px; }
+.painelCategorias li b { color: var(--ji-texto-terciario); font-size: 9px; font-weight: 500; }
+.painelCategorias li strong { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.painelCategorias li small { display: block; margin-top: 5px; color: var(--ji-texto-terciario); font-size: 9px; }
+.trilhoCategoria { width: 100%; height: 4px; margin-top: 9px; border-radius: 999px; display: block !important; overflow: hidden; background: var(--ji-trilho); }
+.trilhoCategoria i { height: 100%; display: block; border-radius: inherit; background: var(--ji-primaria); }
+.estadoCategorias { min-height: 260px; display: grid; place-items: center; color: var(--ji-texto-secundario); font-size: 11px; text-align: center; }
+
+.recentes { margin-top: 30px; }
+.recentes > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.recentes > header > a { color: var(--ji-primaria); font-size: 11px; font-weight: 600; text-decoration: none; }
+.listaRecentes article { min-height: 60px; padding: 9px 2px; border-bottom: 1px solid var(--ji-borda-suave); display: grid; grid-template-columns: 32px minmax(180px, 1fr) 100px 140px; align-items: center; gap: 10px; }
+.listaRecentes article > span { width: 27px; height: 27px; border-radius: 7px; display: grid; place-items: center; }
+.movimentoEntrada { background: var(--ji-positiva-suave); color: var(--ji-positiva); }
+.movimentoSaida { background: var(--ji-negativa-suave); color: var(--ji-negativa); }
+.listaRecentes article > div { display: flex; flex-direction: column; gap: 3px; }
+.listaRecentes article strong { font-size: 12px; font-weight: 500; }
+.listaRecentes article small,
+.listaRecentes time { color: var(--ji-texto-secundario); font-size: 10px; }
+.listaRecentes article > b { text-align: right; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.valorEntrada { color: var(--ji-positiva); }
+.estadoVazio { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--ji-texto-secundario); }
+.estadoVazio strong { color: var(--ji-texto); font-size: 13px; }
+.estadoVazio a { color: var(--ji-primaria); font-size: 11px; font-weight: 600; }
+
+@media (max-width: 1000px) {
+  .faixaResumo { grid-template-columns: 1.3fr 1fr 1fr; }
+  .indicador:last-child { display: none; }
+  .gradeAnalise { grid-template-columns: 1fr; }
+  .painelCategorias ol { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
 }
 
-.identidade strong {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.identidade span {
-  margin-top: 2px;
-  color: var(--ji-texto-secundario);
-  font-size: 10px;
-}
-
-.menuFlutuante button {
-  justify-content: flex-start;
-}
-
-.conteudo {
-  width: min(100% - 48px, 920px);
-  margin: 0 auto;
-  padding: 92px 0 64px;
-}
-
-.saudacao {
-  color: var(--ji-texto-secundario);
-  font-size: 13px;
-}
-
-.conteudo h1 {
-  margin: 6px 0 0;
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-}
-
-.introducao {
-  max-width: 620px;
-  margin: 12px 0 42px;
-  color: var(--ji-texto-secundario);
-  font-size: 15px;
-  line-height: 1.65;
-}
-
-.resumo {
-  margin: 0;
-  padding: 26px 0;
-  border-top: 1px solid var(--ji-borda-suave);
-  border-bottom: 1px solid var(--ji-borda-suave);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.resumo div {
-  padding: 0 28px;
-  border-left: 1px solid var(--ji-borda-suave);
-}
-
-.resumo div:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-
-.resumo dt {
-  color: var(--ji-texto-secundario);
-  font-size: 12px;
-}
-
-.resumo dd {
-  margin: 7px 0 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.proximoPasso {
-  margin-top: 28px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--ji-texto-secundario);
-  font-size: 13px;
-}
-
-.proximoPasso span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: 0 0 auto;
-  background: var(--ji-positiva);
-}
-
-@media (max-width: 639px) {
-  .cabecalho {
-    min-height: 68px;
-    padding: 0 16px;
-  }
-
-  .marca span,
-  .nomeCurto,
-  .contexto small {
-    display: none;
-  }
-
-  .contexto {
-    min-height: 44px;
-    padding: 0 12px;
-  }
-
-  .acoesCabecalho {
-    gap: 4px;
-  }
-
-  .menuUsuario summary {
-    min-width: 44px;
-    min-height: 44px;
-    justify-content: center;
-  }
-
-  .menuUsuario summary svg {
-    display: none;
-  }
-
-  .conteudo {
-    width: auto;
-    padding: 56px 20px;
-  }
-
-  .conteudo h1 {
-    font-size: 25px;
-  }
-
-  .introducao {
-    margin-bottom: 32px;
-  }
-
-  .resumo {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
-
-  .resumo div,
-  .resumo div:first-child {
-    padding: 18px 0;
-    border-left: 0;
-    border-top: 1px solid var(--ji-borda-suave);
-  }
-
-  .resumo div:first-child {
-    border-top: 0;
-  }
+@media (max-width: 719px) {
+  .pagina { width: auto; padding: 27px 16px 86px; }
+  .cabecalhoPagina { align-items: flex-start; flex-direction: column; }
+  .acoesCabecalho { width: 100%; }
+  .acoesCabecalho label { flex: 1; }
+  .acoesCabecalho input { width: 100%; }
+  .acaoPrimaria { width: 44px; padding: 0; justify-content: center; font-size: 0; }
+  .faixaResumo { grid-template-columns: 1fr 1fr; }
+  .saldoPrincipal { grid-column: 1 / -1; min-height: 110px; border-right: 0; border-bottom: 1px solid var(--ji-borda); }
+  .indicador { min-height: 92px; padding: 17px; }
+  .indicador:nth-child(3) { border-right: 0; }
+  .painelCategorias ol { display: block; }
+  .grafico svg { height: 180px; }
+  .legendaGrafico { flex-wrap: wrap; }
+  .legendaGrafico small { width: 100%; margin-left: 0; }
+  .listaRecentes article { grid-template-columns: 30px minmax(0, 1fr) auto; }
+  .listaRecentes time { display: none; }
+  .listaRecentes article > b { grid-column: 3; }
 }

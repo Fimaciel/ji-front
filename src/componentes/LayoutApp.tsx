@@ -5,8 +5,11 @@ import { Botao } from './Botao'
 import {
   IconeChevronBaixo,
   IconeConfiguracoes,
+  IconeCarteira,
+  IconeEtiqueta,
   IconeInicio,
   IconeSair,
+  IconeTransacoes,
 } from './Icones'
 import { LogoJi } from './LogoJi'
 import estilos from './LayoutApp.module.css'
@@ -35,7 +38,7 @@ export function LayoutApp() {
       <header className={estilos.cabecalho}>
         <NavLink className={estilos.marca} to="/app" aria-label="Ji — início">
           <LogoJi tamanho={36} somenteSimbolo />
-          <span>Ji</span>
+          <span className={estilos.nomeMarca}>Ji</span>
         </NavLink>
         <div className={estilos.acoesCabecalho}>
           <div className={estilos.contexto} aria-label="Contexto ativo">
@@ -76,12 +79,35 @@ export function LayoutApp() {
             <NavLink
               to="/app"
               end
+              aria-label="Visão geral"
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
             >
               <IconeInicio tamanho={19} /> <span>Visão geral</span>
             </NavLink>
             <NavLink
+              to="/app/transacoes"
+              aria-label="Transações"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeTransacoes tamanho={19} /> <span>Transações</span>
+            </NavLink>
+            <NavLink
+              to="/app/orcamentos"
+              aria-label="Orçamentos"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeCarteira tamanho={19} /> <span>Orçamentos</span>
+            </NavLink>
+            <NavLink
+              to="/app/categorias"
+              aria-label="Categorias"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeEtiqueta tamanho={19} /> <span>Categorias</span>
+            </NavLink>
+            <NavLink
               to="/app/configuracoes"
+              aria-label="Configurações"
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
             >
               <IconeConfiguracoes tamanho={19} /> <span>Configurações</span>
