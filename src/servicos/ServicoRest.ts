@@ -15,6 +15,11 @@ import {
   type ContextoAtivo,
   type ContextoGerenciamento,
   type ConviteContexto,
+  type ConviteEnviado,
+  type Dependente,
+  type EntradaDependente,
+  type PapelContexto,
+  type ParticipanteContexto,
   type EntradaCadastroUsuario,
   type EntradaLogin,
   type EntradaRedefinicaoSenha,
@@ -96,6 +101,39 @@ interface ConviteContextoApi {
   dataCriacao: string
   dataExpiracao: string
   dataResposta?: string | null
+}
+
+interface ConviteEnviadoApi {
+  id: number
+  emailConvidado: string
+  papelProposto: PapelContexto
+  status: ConviteEnviado['status']
+  dependenteId?: number | null
+  dataCriacao: string
+  dataExpiracao: string
+  dataResposta?: string | null
+}
+
+interface ParticipanteContextoApi {
+  id: number
+  usuarioId: number
+  nome: string
+  email: string
+  papel: PapelContexto
+  dataIngresso: string
+  dataSaida?: string | null
+  ativo: boolean
+}
+
+interface DependenteApi {
+  id: number
+  nome: string
+  dataNascimento: string
+  tipo: Dependente['tipo']
+  participanteId?: number | null
+  usuarioVinculado?: string | null
+  dataCriacao: string
+  dataAtualizacao: string
 }
 
 interface ConfiguracaoApi {
@@ -202,6 +240,33 @@ function mapearConvite(convite: ConviteContextoApi): ConviteContexto {
     id: String(convite.id),
     contextoId: String(convite.contextoId),
     dataResposta: convite.dataResposta ?? undefined,
+  }
+}
+
+function mapearConviteEnviado(convite: ConviteEnviadoApi): ConviteEnviado {
+  return {
+    ...convite,
+    id: String(convite.id),
+    dependenteId: convite.dependenteId == null ? undefined : String(convite.dependenteId),
+    dataResposta: convite.dataResposta ?? undefined,
+  }
+}
+
+function mapearParticipante(participante: ParticipanteContextoApi): ParticipanteContexto {
+  return {
+    ...participante,
+    id: String(participante.id),
+    usuarioId: String(participante.usuarioId),
+    dataSaida: participante.dataSaida ?? undefined,
+  }
+}
+
+function mapearDependente(dependente: DependenteApi): Dependente {
+  return {
+    ...dependente,
+    id: String(dependente.id),
+    participanteId: dependente.participanteId == null ? undefined : String(dependente.participanteId),
+    usuarioVinculado: dependente.usuarioVinculado ?? undefined,
   }
 }
 
@@ -416,6 +481,91 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
       { method: 'POST' },
       true,
     ))
+  }
+
+  async listarConvitesEnviados(): Promise<ConviteEnviado[]> {
+    const convites = await this.requisitar<ConviteEnviadoApi[]>(
+      '/api/v1/contextos/ativo/convites', {}, true,
+    )
+    return convites.map(mapearConviteEnviado)
+  }
+
+  async convidarColaborador(email: string): Promise<ConviteEnviado> {
+    return mapearConviteEnviado(await this.requisitar<ConviteEnviadoApi>(
+      '/api/v1/contextos/ativo/convites',
+      { method: 'POST', body: JSON.stringify({ email }) },
+      true,
+    ))
+  }
+
+  async reenviarConvite(conviteId: string): Promise<ConviteEnviado> {
+    return mapearConviteEnviado(await this.requisitar<ConviteEnviadoApi>(
+      `/api/v1/contextos/ativo/convites/${encodeURIComponent(conviteId)}/reenvio`,
+      { method: 'POST' },
+      true,
+    ))
+  }
+
+  async cancelarConvite(conviteId: string): Promise<void> {
+    await this.requisitar(
+      `/api/v1/contextos/ativo/convites/${encodeURIComponent(conviteId)}`,
+      { method: 'DELETE' },
+      true,
+    )
+  }
+
+  async listarParticipantes(): Promise<ParticipanteContexto[]> {
+    const participantes = await this.requisitar<ParticipanteContextoApi[]>(
+      '/api/v1/contextos/ativo/participantes', {}, true,
+    )
+    return participantes.map(mapearParticipante)
+  }
+
+  async alterarPapelParticipante(participanteId: string, papel: PapelContexto) {
+    return mapearParticipante(await this.requisitar<ParticipanteContextoApi>(
+      `/api/v1/contextos/ativo/participantes/${encodeURIComponent(participanteId)}/papel`,
+      { method: 'PATCH', body: JSON.stringify({ papel }) },
+      true,
+    ))
+  }
+
+  async removerParticipante(participanteId: string): Promise<void> {
+    await this.requisitar(
+      `/api/v1/contextos/ativo/participantes/${encodeURIComponent(participanteId)}`,
+      { method: 'DELETE' },
+      true,
+    )
+  }
+
+  async sairDoContexto(): Promise<void> {
+    await this.requisitar('/api/v1/contextos/ativo/participantes/me', { method: 'DELETE' }, true)
+  }
+
+  async listarDependentes(): Promise<Dependente[]> {
+    const dependentes = await this.requisitar<DependenteApi[]>('/api/v1/dependentes', {}, true)
+    return dependentes.map(mapearDependente)
+  }
+
+  async criarDependente(entrada: EntradaDependente): Promise<Dependente> {
+    return mapearDependente(await this.requisitar<DependenteApi>('/api/v1/dependentes', {
+      method: 'POST', body: JSON.stringify(entrada),
+    }, true))
+  }
+
+  async atualizarDependente(dependenteId: string, entrada: EntradaDependente): Promise<Dependente> {
+    return mapearDependente(await this.requisitar<DependenteApi>(
+      `/api/v1/dependentes/${encodeURIComponent(dependenteId)}`,
+      { method: 'PUT', body: JSON.stringify(entrada) },
+      true,
+    ))
+  }
+
+  async excluirDependente(dependenteId: string): Promise<void> {
+    await this.requisitar(
+      `/api/v1/dependentes/${encodeURIComponent(dependenteId)}`,
+      { method: 'DELETE' },
+      true,
+    )
   }
 
   async obterConta() {

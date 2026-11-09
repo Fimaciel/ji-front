@@ -94,6 +94,29 @@
 .linkPrimario { min-height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--ji-primaria); color: #fff; font-size: 14px; font-weight: 500; text-decoration: none; }
 .validade { display: block; margin-top: 14px; color: var(--ji-texto-terciario); font-size: 11px; text-align: center; }
 
+.abas {
+  margin: 22px 0;
+  border-bottom: 1px solid var(--ji-borda);
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+}
+.abas button { padding: 12px 2px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--ji-texto-secundario); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.abas button[aria-selected='true'] { border-bottom-color: var(--ji-primaria); color: var(--ji-texto); font-weight: 600; }
+.itemInativo { opacity: .62; }
+.seletorCompacto { min-height: 36px; padding: 0 30px 0 10px; border: 1px solid var(--ji-borda); border-radius: 7px; background: var(--ji-fundo); color: var(--ji-texto); font: inherit; font-size: 12px; }
+.acaoPerigosa { margin-top: 28px; padding: 18px; border: 1px solid var(--ji-borda); border-radius: 9px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.acaoPerigosa div { display: flex; flex-direction: column; gap: 4px; }
+.acaoPerigosa strong { font-size: 13px; }
+.acaoPerigosa span { color: var(--ji-texto-secundario); font-size: 12px; }
+.painelFormularioVertical { margin: 20px 0 28px; padding: 22px; border: 1px solid var(--ji-borda); border-radius: 10px; background: var(--ji-fundo); }
+.painelFormularioVertical h2 { margin: 0 0 5px; font-size: 16px; }
+.painelFormularioVertical p { margin: 0; color: var(--ji-texto-secundario); font-size: 12px; }
+.painelFormularioVertical form { margin-top: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: 14px; }
+.campoSelect { display: flex; flex-direction: column; gap: 7px; color: var(--ji-texto-secundario); font-size: 12px; font-weight: 500; }
+.campoSelect select { min-height: 44px; padding: 0 12px; border: 1px solid var(--ji-borda); border-radius: 8px; background: var(--ji-fundo); color: var(--ji-texto); font: inherit; }
+.acoesFormulario { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+
 @media (max-width: 699px) {
   .pagina { width: min(100% - 28px, 980px); padding-top: 28px; }
   .painelCriacao { grid-template-columns: 1fr; gap: 14px; }
@@ -101,4 +124,6 @@
   .itemLista { align-items: flex-start; flex-wrap: wrap; }
   .acoesItem { width: 100%; justify-content: flex-end; }
   .selecaoPainel, .convitePainel { padding: 24px; }
+  .acaoPerigosa { align-items: stretch; flex-direction: column; }
+  .painelFormularioVertical form { grid-template-columns: 1fr; }
 }

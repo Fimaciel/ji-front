@@ -65,11 +65,18 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
 
   const recarregarContextos = useCallback(async () => {
     const contextos = await servicoContextos.listarContextos()
+    const contextoMarcadoAtivo = contextos.find((contexto) => contexto.ativo)
+    const contextoAtivo = contextoMarcadoAtivo
+      ?? (contextos.length === 1 ? await servicoContextos.selecionarContexto(contextos[0].id) : null)
     definirSessao((atual) => {
       if (!atual) return atual
       const novaSessao = {
         ...atual,
         contextos: contextos.map(({ id, nome, tipo, papel }) => ({ id, nome, tipo, papel })),
+        contextoAtivo: contextoAtivo
+          ? { id: contextoAtivo.id, nome: contextoAtivo.nome, tipo: contextoAtivo.tipo, papel: contextoAtivo.papel }
+          : atual.contextoAtivo,
+        selecaoContextoNecessaria: !contextoAtivo && contextos.length > 1,
       }
       atualizarSessaoPersistida(novaSessao)
       return novaSessao

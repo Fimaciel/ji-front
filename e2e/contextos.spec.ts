@@ -31,3 +31,27 @@ test.describe('contextos e convites da Sprint 5', () => {
     await expect(page.getByRole('button', { name: 'Aceitar convite' })).toBeVisible()
   })
 })
+
+test.describe('colaboração da Sprint 6', () => {
+  test('gerencia convite e dependente no contexto compartilhado', async ({ page }) => {
+    await entrar(page)
+    await page.getByRole('link', { name: 'Contextos' }).click()
+    await page.getByLabel('Nome do contexto').fill('Casa em conjunto')
+    await page.getByRole('button', { name: 'Criar contexto' }).click()
+    await page.getByRole('button', { name: 'Selecionar' }).click()
+    await page.getByRole('link', { name: 'Equipe do contexto' }).click()
+
+    await expect(page.getByText('Filipe Maciel Lopes (você)')).toBeVisible()
+    await page.getByRole('tab', { name: 'Convites enviados' }).click()
+    await page.getByLabel('E-mail').fill('colaborador@email.com')
+    await page.getByRole('button', { name: 'Enviar convite' }).click()
+    await expect(page.getByText('Convite enviado com validade de sete dias.')).toBeVisible()
+
+    await page.getByRole('tab', { name: 'Dependentes' }).click()
+    await page.getByLabel('Nome').fill('Ana Maciel')
+    await page.getByLabel('Data de nascimento').fill('2015-04-10')
+    await page.getByRole('button', { name: 'Cadastrar dependente' }).click()
+    await expect(page.getByText('Dependente cadastrado.')).toBeVisible()
+    await expect(page.getByText('Ana Maciel')).toBeVisible()
+  })
+})

@@ -43,6 +43,48 @@ export interface ConviteContexto {
   dataResposta?: string
 }
 
+export interface ConviteEnviado {
+  id: string
+  emailConvidado: string
+  papelProposto: PapelContexto
+  status: StatusConvite
+  dependenteId?: string
+  dataCriacao: string
+  dataExpiracao: string
+  dataResposta?: string
+}
+
+export interface ParticipanteContexto {
+  id: string
+  usuarioId: string
+  nome: string
+  email: string
+  papel: PapelContexto
+  dataIngresso: string
+  dataSaida?: string
+  ativo: boolean
+}
+
+export type TipoDependente = 'PASSIVO' | 'LEITURA'
+
+export interface Dependente {
+  id: string
+  nome: string
+  dataNascimento: string
+  tipo: TipoDependente
+  participanteId?: string
+  usuarioVinculado?: string
+  dataCriacao: string
+  dataAtualizacao: string
+}
+
+export interface EntradaDependente {
+  nome: string
+  dataNascimento: string
+  tipo: TipoDependente
+  email?: string
+}
+
 export interface EntradaCadastroUsuario {
   nome: string
   sobrenome: string

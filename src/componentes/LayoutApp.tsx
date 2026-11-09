@@ -152,6 +152,13 @@ export function LayoutApp() {
               <IconeEmail tamanho={19} /> <span>Convites</span>
             </NavLink>
             <NavLink
+              to="/app/colaboracao"
+              aria-label="Equipe do contexto"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeUsuario tamanho={19} /> <span>Equipe</span>
+            </NavLink>
+            <NavLink
               to="/app/configuracoes"
               aria-label="Configurações"
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}

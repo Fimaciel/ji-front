@@ -14,6 +14,7 @@ import { TelaSelecionarContexto } from './telas/TelaSelecionarContexto'
 import { TelaContextos } from './telas/TelaContextos'
 import { TelaConvites } from './telas/TelaConvites'
 import { TelaConvitePublico } from './telas/TelaConvitePublico'
+import { TelaColaboracao } from './telas/TelaColaboracao'
 
 export function App() {
   return (
@@ -33,6 +34,7 @@ export function App() {
         <Route path="configuracoes" element={<TelaConfiguracoes />} />
         <Route path="contextos" element={<TelaContextos />} />
         <Route path="convites" element={<TelaConvites />} />
+        <Route path="colaboracao" element={<TelaColaboracao />} />
       </Route>
       <Route path="*" element={<Navigate to="/entrar" replace />} />
     </Routes>

@@ -19,6 +19,11 @@ import {
   type ContextoAtivo,
   type ContextoGerenciamento,
   type ConviteContexto,
+  type ConviteEnviado,
+  type Dependente,
+  type EntradaDependente,
+  type PapelContexto,
+  type ParticipanteContexto,
   type ResultadoSolicitacaoRecuperacao,
   type SessaoAutenticada,
   type UsuarioResumo,
@@ -93,6 +98,9 @@ let usuarios = new Map<string, ContaUsuarioMock>()
 let tokens = new Map<string, RegistroToken>()
 let eventosAuditoria: EventoAuditoria[] = []
 let convites: ConviteContexto[] = []
+let convitesEnviados = new Map<string, ConviteEnviado[]>()
+let participantes = new Map<string, ParticipanteContexto[]>()
+let dependentes = new Map<string, Dependente[]>()
 
 function normalizarEmail(email: string) {
   return email.trim().toLocaleLowerCase('pt-BR')
@@ -175,6 +183,19 @@ function criarDadosIniciais() {
     ],
   ])
   eventosAuditoria = []
+  convitesEnviados = new Map()
+  participantes = new Map()
+  dependentes = new Map()
+  const contextoPessoalId = `contexto-pessoal-${usuarioDemonstracao.id}`
+  participantes.set(contextoPessoalId, [{
+    id: `participante-${usuarioDemonstracao.id}`,
+    usuarioId: usuarioDemonstracao.id,
+    nome: usuarioDemonstracao.nomeCompleto,
+    email: usuarioDemonstracao.email,
+    papel: 'ADMINISTRADOR',
+    dataIngresso: agora,
+    ativo: true,
+  }])
   convites = [
     {
       id: 'convite-demonstracao',
@@ -378,6 +399,15 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
       papel: 'ADMINISTRADOR',
     }
     conta.contextos.push(contexto)
+    participantes.set(contexto.id, [{
+      id: `participante-${contexto.id}-${conta.usuario.id}`,
+      usuarioId: conta.usuario.id,
+      nome: conta.usuario.nomeCompleto,
+      email: conta.usuario.email,
+      papel: 'ADMINISTRADOR',
+      dataIngresso: new Date().toISOString(),
+      ativo: true,
+    }])
     const sessao = lerSessaoAtual()
     if (sessao) {
       atualizarSessaoPersistida({ ...sessao, contextos: conta.contextos.map((item) => ({ ...item })) })
@@ -441,6 +471,15 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
         tipo: 'COMPARTILHADO',
         papel: convite.papelProposto,
       })
+      participantes.set(convite.contextoId, [{
+        id: `participante-${convite.contextoId}-${conta.usuario.id}`,
+        usuarioId: conta.usuario.id,
+        nome: conta.usuario.nomeCompleto,
+        email: conta.usuario.email,
+        papel: convite.papelProposto,
+        dataIngresso: convite.dataResposta,
+        ativo: true,
+      }])
     }
     eventosAuditoria.push({ acao: 'ACEITE_CONVITE', dataHora: convite.dataResposta, usuarioId: conta.usuario.id })
     return { ...convite }
@@ -457,6 +496,185 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
     convite.dataResposta = new Date().toISOString()
     eventosAuditoria.push({ acao: 'RECUSA_CONVITE', dataHora: convite.dataResposta, usuarioId: conta.usuario.id })
     return { ...convite }
+  }
+
+  async listarConvitesEnviados(): Promise<ConviteEnviado[]> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado()
+    return (convitesEnviados.get(contexto.id) ?? []).map((convite) => ({ ...convite }))
+  }
+
+  async convidarColaborador(emailInformado: string): Promise<ConviteEnviado> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const email = normalizarEmail(emailInformado)
+    const lista = convitesEnviados.get(contexto.id) ?? []
+    if (lista.some((convite) => convite.emailConvidado === email && convite.status === 'PENDENTE')) {
+      throw new ErroApi('convite-pendente', 'Já existe um convite pendente para este e-mail.', {}, 409)
+    }
+    const agora = new Date()
+    const convite: ConviteEnviado = {
+      id: `convite-enviado-${contexto.id}-${lista.length + 1}`,
+      emailConvidado: email,
+      papelProposto: 'COLABORADOR',
+      status: 'PENDENTE',
+      dataCriacao: agora.toISOString(),
+      dataExpiracao: new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }
+    lista.unshift(convite)
+    convitesEnviados.set(contexto.id, lista)
+    return { ...convite }
+  }
+
+  async reenviarConvite(conviteId: string): Promise<ConviteEnviado> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const convite = (convitesEnviados.get(contexto.id) ?? []).find((item) => item.id === conviteId)
+    if (!convite || convite.status !== 'PENDENTE') {
+      throw new ErroApi('convite-indisponivel', 'Este convite não pode ser reenviado.', {}, 400)
+    }
+    const agora = new Date()
+    convite.dataCriacao = agora.toISOString()
+    convite.dataExpiracao = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    return { ...convite }
+  }
+
+  async cancelarConvite(conviteId: string): Promise<void> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const convite = (convitesEnviados.get(contexto.id) ?? []).find((item) => item.id === conviteId)
+    if (!convite || convite.status !== 'PENDENTE') {
+      throw new ErroApi('convite-indisponivel', 'Este convite não pode ser cancelado.', {}, 400)
+    }
+    convite.status = 'CANCELADO'
+    convite.dataResposta = new Date().toISOString()
+  }
+
+  async listarParticipantes(): Promise<ParticipanteContexto[]> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado()
+    return (participantes.get(contexto.id) ?? []).map((participante) => ({ ...participante }))
+  }
+
+  async alterarPapelParticipante(
+    participanteId: string,
+    papel: PapelContexto,
+  ): Promise<ParticipanteContexto> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    if (papel === 'DEPENDENTE') {
+      throw new ErroApi('papel-invalido', 'Dependentes são gerenciados no cadastro de dependentes.')
+    }
+    const lista = participantes.get(contexto.id) ?? []
+    const participante = lista.find((item) => item.id === participanteId && item.ativo)
+    if (!participante) throw new ErroApi('participante-nao-encontrado', 'Participante não encontrado.', {}, 404)
+    if (participante.papel === 'ADMINISTRADOR' && papel !== 'ADMINISTRADOR'
+      && lista.filter((item) => item.ativo && item.papel === 'ADMINISTRADOR').length === 1) {
+      throw new ErroApi('ultimo-administrador', 'O contexto precisa manter ao menos um administrador.', {}, 409)
+    }
+    participante.papel = papel
+    return { ...participante }
+  }
+
+  async removerParticipante(participanteId: string): Promise<void> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const lista = participantes.get(contexto.id) ?? []
+    const participante = lista.find((item) => item.id === participanteId && item.ativo)
+    if (!participante) throw new ErroApi('participante-nao-encontrado', 'Participante não encontrado.', {}, 404)
+    if (participante.papel === 'ADMINISTRADOR'
+      && lista.filter((item) => item.ativo && item.papel === 'ADMINISTRADOR').length === 1) {
+      throw new ErroApi('ultimo-administrador', 'O contexto precisa manter ao menos um administrador.', {}, 409)
+    }
+    participante.ativo = false
+    participante.dataSaida = new Date().toISOString()
+  }
+
+  async sairDoContexto(): Promise<void> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const contexto = this.obterContextoAtivoCompartilhado()
+    const lista = participantes.get(contexto.id) ?? []
+    const participante = lista.find((item) => item.usuarioId === conta.usuario.id && item.ativo)
+    if (!participante) throw new ErroApi('participante-nao-encontrado', 'Participante não encontrado.', {}, 404)
+    if (participante.papel === 'ADMINISTRADOR'
+      && lista.filter((item) => item.ativo && item.papel === 'ADMINISTRADOR').length === 1) {
+      throw new ErroApi('ultimo-administrador', 'Transfira a administração antes de sair.', {}, 409)
+    }
+    participante.ativo = false
+    participante.dataSaida = new Date().toISOString()
+    conta.contextos = conta.contextos.filter((item) => item.id !== contexto.id)
+    const sessao = lerSessaoAtual()
+    if (sessao) {
+      atualizarSessaoPersistida({
+        ...sessao,
+        contextoAtivo: { ...conta.contextos[0] },
+        contextos: conta.contextos.map((item) => ({ ...item })),
+        selecaoContextoNecessaria: false,
+      })
+    }
+  }
+
+  async listarDependentes(): Promise<Dependente[]> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    return (dependentes.get(contexto.id) ?? []).map((dependente) => ({ ...dependente }))
+  }
+
+  async criarDependente(entrada: EntradaDependente): Promise<Dependente> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    if (entrada.tipo === 'LEITURA' && !entrada.email?.trim()) {
+      throw new ErroApi('email-obrigatorio', 'Informe o e-mail do dependente com acesso de leitura.')
+    }
+    const lista = dependentes.get(contexto.id) ?? []
+    const agora = new Date().toISOString()
+    const dependente: Dependente = {
+      id: `dependente-${contexto.id}-${lista.length + 1}`,
+      nome: entrada.nome.trim(),
+      dataNascimento: entrada.dataNascimento,
+      tipo: entrada.tipo,
+      dataCriacao: agora,
+      dataAtualizacao: agora,
+    }
+    lista.push(dependente)
+    dependentes.set(contexto.id, lista)
+    if (entrada.tipo === 'LEITURA') this.criarConviteDependente(contexto.id, dependente.id, entrada.email!)
+    return { ...dependente }
+  }
+
+  async atualizarDependente(dependenteId: string, entrada: EntradaDependente): Promise<Dependente> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const dependente = (dependentes.get(contexto.id) ?? []).find((item) => item.id === dependenteId)
+    if (!dependente) throw new ErroApi('dependente-nao-encontrado', 'Dependente não encontrado.', {}, 404)
+    if (entrada.tipo === 'LEITURA' && !dependente.participanteId && !entrada.email?.trim()) {
+      throw new ErroApi('email-obrigatorio', 'Informe o e-mail do dependente com acesso de leitura.')
+    }
+    dependente.nome = entrada.nome.trim()
+    dependente.dataNascimento = entrada.dataNascimento
+    dependente.tipo = entrada.tipo
+    dependente.dataAtualizacao = new Date().toISOString()
+    if (entrada.tipo === 'LEITURA' && !dependente.participanteId) {
+      const pendente = (convitesEnviados.get(contexto.id) ?? [])
+        .find((convite) => convite.dependenteId === dependente.id && convite.status === 'PENDENTE')
+      if (pendente) pendente.status = 'CANCELADO'
+      this.criarConviteDependente(contexto.id, dependente.id, entrada.email!)
+    }
+    return { ...dependente }
+  }
+
+  async excluirDependente(dependenteId: string): Promise<void> {
+    await aguardarLatencia()
+    const contexto = this.obterContextoAtivoCompartilhado(true)
+    const lista = dependentes.get(contexto.id) ?? []
+    if (!lista.some((item) => item.id === dependenteId)) {
+      throw new ErroApi('dependente-nao-encontrado', 'Dependente não encontrado.', {}, 404)
+    }
+    dependentes.set(contexto.id, lista.filter((item) => item.id !== dependenteId))
+    for (const convite of convitesEnviados.get(contexto.id) ?? []) {
+      if (convite.dependenteId === dependenteId && convite.status === 'PENDENTE') convite.status = 'CANCELADO'
+    }
   }
 
   async obterConta(): Promise<ContaUsuario> {
@@ -573,6 +791,32 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
       throw new ErroApi('sessao-invalida', 'Faça login novamente.', {}, 401)
     }
     return conta
+  }
+
+  private obterContextoAtivoCompartilhado(exigirAdministrador = false) {
+    const sessao = lerSessaoAtual()
+    if (!sessao || sessao.contextoAtivo.tipo !== 'COMPARTILHADO') {
+      throw new ErroApi('contexto-compartilhado-obrigatorio', 'Selecione um contexto compartilhado.', {}, 400)
+    }
+    if (exigirAdministrador && sessao.contextoAtivo.papel !== 'ADMINISTRADOR') {
+      throw new ErroApi('acesso-negado', 'Somente administradores podem realizar esta ação.', {}, 403)
+    }
+    return sessao.contextoAtivo
+  }
+
+  private criarConviteDependente(contextoId: string, dependenteId: string, emailInformado: string) {
+    const lista = convitesEnviados.get(contextoId) ?? []
+    const agora = new Date()
+    lista.unshift({
+      id: `convite-dependente-${contextoId}-${lista.length + 1}`,
+      emailConvidado: normalizarEmail(emailInformado),
+      papelProposto: 'DEPENDENTE',
+      status: 'PENDENTE',
+      dependenteId,
+      dataCriacao: agora.toISOString(),
+      dataExpiracao: new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    convitesEnviados.set(contextoId, lista)
   }
 
   private criarResumo(usuario: UsuarioMock): UsuarioResumo {

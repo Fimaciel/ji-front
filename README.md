@@ -1,11 +1,11 @@
-# Ji Front — Sprints 1 a 5
+# Ji Front — Sprints 1 a 6
 
 Interface React e TypeScript do Gerenciador Financeiro Pessoal Ji. A aplicação
 consome a API REST por padrão e inclui autenticação, recuperação de senha,
 layout interno responsivo, a tela unificada de configurações da Sprint 2 e o
 gerenciamento de categorias e transações da Sprint 3, além do dashboard e dos
-orçamentos mensais por categoria da Sprint 4 e dos contextos compartilhados da
-Sprint 5.
+orçamentos mensais por categoria da Sprint 4, os contextos compartilhados da
+Sprint 5 e a colaboração da Sprint 6.
 
 ## Configuração e execução
 
@@ -96,6 +96,20 @@ As rotas protegidas são `/selecionar-contexto`, `/app/contextos` e
 `/app/convites`. O link externo usa `/convite/:token`. O mock começa com um
 convite demonstrativo e permite validar o fluxo completo sem o back-end.
 
+## Sprint 6
+
+A rota protegida `/app/colaboracao` reúne a gestão do contexto compartilhado:
+
+- convite, reenvio e cancelamento de acesso de colaborador;
+- listagem de participantes ativos e do histórico de saídas;
+- troca entre os papéis de administrador e colaborador;
+- remoção de participante e saída voluntária, mantendo ao menos um administrador;
+- cadastro, edição e exclusão de dependentes passivos;
+- convite de dependente com acesso de leitura, sem mudança manual para esse papel.
+
+As ações administrativas aparecem apenas para administradores. Em contexto
+pessoal, a tela orienta a selecionar ou criar um contexto compartilhado.
+
 ## Verificações
 
 ```bash
@@ -121,3 +135,5 @@ back-end, em
 [`docs/sprint-3-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-3-rastreabilidade.md).
 A Sprint 4 está registrada em
 [`docs/sprint-4-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-4-rastreabilidade.md).
+A Sprint 6 está registrada em
+[`docs/sprint-6-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-6-rastreabilidade.md).
