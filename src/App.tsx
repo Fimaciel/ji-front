@@ -10,6 +10,10 @@ import { TelaConfiguracoes } from './telas/TelaConfiguracoes'
 import { TelaCategorias } from './telas/TelaCategorias'
 import { TelaTransacoes } from './telas/TelaTransacoes'
 import { TelaOrcamentos } from './telas/TelaOrcamentos'
+import { TelaSelecionarContexto } from './telas/TelaSelecionarContexto'
+import { TelaContextos } from './telas/TelaContextos'
+import { TelaConvites } from './telas/TelaConvites'
+import { TelaConvitePublico } from './telas/TelaConvitePublico'
 
 export function App() {
   return (
@@ -19,12 +23,16 @@ export function App() {
       <Route path="/cadastro" element={<RotaPublica><TelaCadastro /></RotaPublica>} />
       <Route path="/recuperar-senha" element={<RotaPublica><TelaRecuperarSenha /></RotaPublica>} />
       <Route path="/redefinir-senha" element={<RotaPublica><TelaRedefinirSenha /></RotaPublica>} />
+      <Route path="/convite/:token" element={<TelaConvitePublico />} />
+      <Route path="/selecionar-contexto" element={<RotaProtegida><TelaSelecionarContexto /></RotaProtegida>} />
       <Route path="/app" element={<RotaProtegida><LayoutApp /></RotaProtegida>}>
         <Route index element={<TelaApp />} />
         <Route path="transacoes" element={<TelaTransacoes />} />
         <Route path="orcamentos" element={<TelaOrcamentos />} />
         <Route path="categorias" element={<TelaCategorias />} />
         <Route path="configuracoes" element={<TelaConfiguracoes />} />
+        <Route path="contextos" element={<TelaContextos />} />
+        <Route path="convites" element={<TelaConvites />} />
       </Route>
       <Route path="*" element={<Navigate to="/entrar" replace />} />
     </Routes>

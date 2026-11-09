@@ -19,12 +19,17 @@ export function RotaProtegida({ children }: { children: ReactNode }) {
   if (!sessao) {
     return <Navigate to="/entrar" replace state={{ de: localizacao.pathname }} />
   }
+  if (sessao.selecaoContextoNecessaria && localizacao.pathname !== '/selecionar-contexto') {
+    return <Navigate to="/selecionar-contexto" replace />
+  }
   return children
 }
 
 export function RotaPublica({ children }: { children: ReactNode }) {
   const { sessao, carregandoSessao } = useAutenticacao()
   if (carregandoSessao) return <AguardeSessao />
-  if (sessao) return <Navigate to="/app" replace />
+  if (sessao) {
+    return <Navigate to={sessao.selecaoContextoNecessaria ? '/selecionar-contexto' : '/app'} replace />
+  }
   return children
 }

@@ -46,8 +46,13 @@ export function TelaEntrar() {
   async function autenticar(dados: DadosLogin) {
     definirErroGeral('')
     try {
-      await entrar(dados)
-      navegar(estado?.de === '/app' ? estado.de : '/app', { replace: true })
+      const sessao = await entrar(dados)
+      navegar(
+        sessao.selecaoContextoNecessaria
+          ? '/selecionar-contexto'
+          : estado?.de?.startsWith('/') ? estado.de : '/app',
+        { replace: true },
+      )
     } catch {
       definirErroGeral('Não foi possível entrar. Confira o e-mail e a senha.')
     }

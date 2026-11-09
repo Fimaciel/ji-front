@@ -1,10 +1,11 @@
-# Ji Front — Sprints 1 a 4
+# Ji Front — Sprints 1 a 5
 
 Interface React e TypeScript do Gerenciador Financeiro Pessoal Ji. A aplicação
 consome a API REST por padrão e inclui autenticação, recuperação de senha,
 layout interno responsivo, a tela unificada de configurações da Sprint 2 e o
 gerenciamento de categorias e transações da Sprint 3, além do dashboard e dos
-orçamentos mensais por categoria da Sprint 4.
+orçamentos mensais por categoria da Sprint 4 e dos contextos compartilhados da
+Sprint 5.
 
 ## Configuração e execução
 
@@ -80,6 +81,20 @@ As rotas protegidas `/app` e `/app/orcamentos` oferecem:
 O mock inclui transações e orçamentos demonstrativos. No modo REST, os dados
 são sempre calculados no contexto ativo e o mês é enviado no formato
 `AAAA-MM`.
+
+## Sprint 5
+
+Os fluxos de contexto incluem:
+
+- escolha obrigatória após o login quando a conta participa de mais de um contexto;
+- seletor fixo no cabeçalho, com atualização das telas financeiras;
+- criação e listagem de contextos pessoais e compartilhados;
+- lista de convites pendentes, aceite e recusa;
+- abertura do convite por link público e resposta após autenticação.
+
+As rotas protegidas são `/selecionar-contexto`, `/app/contextos` e
+`/app/convites`. O link externo usa `/convite/:token`. O mock começa com um
+convite demonstrativo e permite validar o fluxo completo sem o back-end.
 
 ## Verificações
 

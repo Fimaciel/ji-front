@@ -1,0 +1,104 @@
+.pagina {
+  width: min(100% - 48px, 980px);
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.cabecalhoPagina { margin-bottom: 26px; }
+.cabecalhoPagina p, .painelCriacao p { margin: 0 0 5px; color: var(--ji-texto-secundario); font-size: 12px; }
+.cabecalhoPagina h1 { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 600; letter-spacing: -.45px; }
+.cabecalhoPagina span { display: block; margin-top: 7px; color: var(--ji-texto-secundario); font-size: 13px; }
+
+.painelCriacao {
+  margin: 20px 0;
+  padding: 22px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 28px;
+  background: var(--ji-fundo);
+}
+.painelCriacao h2 { margin: 0 0 5px; font-size: 16px; font-weight: 600; }
+.painelCriacao form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; }
+
+.lista { border-top: 1px solid var(--ji-borda-suave); }
+.itemLista {
+  min-height: 82px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--ji-borda-suave);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.marcaContexto {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: var(--ji-primaria-suave);
+  color: var(--ji-primaria);
+  font-size: 14px;
+  font-weight: 600;
+}
+.conteudoItem { min-width: 0; display: flex; flex: 1; flex-direction: column; gap: 4px; }
+.conteudoItem strong { font-size: 14px; font-weight: 600; }
+.conteudoItem span, .conteudoItem small { color: var(--ji-texto-secundario); font-size: 12px; }
+.conteudoItem small { color: var(--ji-texto-terciario); }
+.acoesItem { display: flex; gap: 6px; }
+.distintivo, .distintivoAtivo { padding: 4px 9px; border-radius: 999px; font-size: 11px; }
+.distintivo { background: var(--ji-fundo-sutil); color: var(--ji-texto-secundario); }
+.distintivoAtivo { background: var(--ji-positiva-suave); color: var(--ji-positiva); }
+.estadoVazio { padding: 48px 12px; color: var(--ji-texto-secundario); font-size: 13px; text-align: center; }
+
+.selecaoPagina {
+  min-height: 100dvh;
+  padding: 48px 20px;
+  display: grid;
+  place-items: center;
+  background: var(--ji-fundo-suave);
+}
+.selecaoPainel, .convitePainel {
+  width: min(100%, 480px);
+  padding: 32px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 12px;
+  background: var(--ji-fundo);
+  box-shadow: 0 20px 60px rgb(15 20 30 / 8%);
+}
+.selecaoPainel > svg, .convitePainel > svg { display: block; margin: 0 auto 24px; }
+.selecaoCabecalho { margin-bottom: 22px; text-align: center; }
+.selecaoCabecalho p { margin: 0 0 5px; color: var(--ji-primaria); font-size: 12px; font-weight: 600; }
+.selecaoCabecalho h1 { margin: 0; font-size: 24px; font-weight: 600; }
+.selecaoCabecalho span { display: block; margin-top: 8px; color: var(--ji-texto-secundario); font-size: 13px; line-height: 1.5; }
+.opcoesContexto { margin: 18px 0; display: grid; gap: 8px; }
+.opcoesContexto label {
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.opcoesContexto label:hover, .opcoesContexto .contextoSelecionado { border-color: var(--ji-primaria); background: var(--ji-primaria-suave); }
+.opcoesContexto input { position: absolute; opacity: 0; pointer-events: none; }
+.opcoesContexto label > span:last-child { display: flex; flex-direction: column; gap: 3px; }
+.opcoesContexto strong { font-size: 13px; font-weight: 600; }
+.opcoesContexto small { color: var(--ji-texto-secundario); font-size: 11px; text-transform: capitalize; }
+.botaoTexto { width: 100%; min-height: 42px; margin-top: 8px; border: 0; background: transparent; color: var(--ji-texto-secundario); font-size: 12px; cursor: pointer; }
+.botaoTexto:hover { color: var(--ji-texto); }
+.linkPrimario { min-height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--ji-primaria); color: #fff; font-size: 14px; font-weight: 500; text-decoration: none; }
+.validade { display: block; margin-top: 14px; color: var(--ji-texto-terciario); font-size: 11px; text-align: center; }
+
+@media (max-width: 699px) {
+  .pagina { width: min(100% - 28px, 980px); padding-top: 28px; }
+  .painelCriacao { grid-template-columns: 1fr; gap: 14px; }
+  .painelCriacao form { grid-template-columns: 1fr; }
+  .itemLista { align-items: flex-start; flex-wrap: wrap; }
+  .acoesItem { width: 100%; justify-content: flex-end; }
+  .selecaoPainel, .convitePainel { padding: 24px; }
+}

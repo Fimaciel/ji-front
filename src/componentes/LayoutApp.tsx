@@ -10,14 +10,17 @@ import {
   IconeInicio,
   IconeSair,
   IconeTransacoes,
+  IconeUsuario,
+  IconeEmail,
 } from './Icones'
 import { LogoJi } from './LogoJi'
 import estilos from './LayoutApp.module.css'
 
 export function LayoutApp() {
-  const { sessao, sair } = useAutenticacao()
+  const { sessao, sair, selecionarContexto } = useAutenticacao()
   const navegar = useNavigate()
   const [saindo, definirSaindo] = useState(false)
+  const [selecionando, definirSelecionando] = useState('')
 
   if (!sessao) return null
 
@@ -31,6 +34,16 @@ export function LayoutApp() {
     }
   }
 
+  async function trocarContexto(contextoId: string) {
+    if (contextoId === sessao?.contextoAtivo.id) return
+    definirSelecionando(contextoId)
+    try {
+      await selecionarContexto(contextoId)
+    } finally {
+      definirSelecionando('')
+    }
+  }
+
   const iniciais = `${sessao.usuario.nome[0] ?? ''}${sessao.usuario.sobrenome[0] ?? ''}`
 
   return (
@@ -41,10 +54,29 @@ export function LayoutApp() {
           <span className={estilos.nomeMarca}>Ji</span>
         </NavLink>
         <div className={estilos.acoesCabecalho}>
-          <div className={estilos.contexto} aria-label="Contexto ativo">
-            <span>{sessao.contextoAtivo.nome}</span>
-            <small>{sessao.contextoAtivo.tipo} · {sessao.contextoAtivo.papel}</small>
-          </div>
+          <details className={estilos.menuContexto}>
+            <summary className={estilos.contexto} aria-label="Contexto ativo">
+              <span>{sessao.contextoAtivo.nome}</span>
+              <small>{sessao.contextoAtivo.tipo} · {sessao.contextoAtivo.papel}</small>
+              <IconeChevronBaixo tamanho={14} />
+            </summary>
+            <div className={estilos.listaContextos}>
+              <p>Trocar contexto</p>
+              {sessao.contextos.map((contexto) => (
+                <button
+                  key={contexto.id}
+                  type="button"
+                  className={contexto.id === sessao.contextoAtivo.id ? estilos.contextoAtivo : ''}
+                  disabled={Boolean(selecionando)}
+                  onClick={() => trocarContexto(contexto.id)}
+                >
+                  <span>{contexto.nome}</span>
+                  <small>{contexto.id === sessao.contextoAtivo.id ? 'Ativo' : contexto.papel.toLocaleLowerCase('pt-BR')}</small>
+                </button>
+              ))}
+              <NavLink to="/app/contextos">Gerenciar contextos</NavLink>
+            </div>
+          </details>
           <details className={estilos.menuUsuario}>
             <summary aria-label="Abrir menu do usuário">
               <span className={estilos.avatar}>{iniciais}</span>
@@ -106,6 +138,20 @@ export function LayoutApp() {
               <IconeEtiqueta tamanho={19} /> <span>Categorias</span>
             </NavLink>
             <NavLink
+              to="/app/contextos"
+              aria-label="Contextos"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeUsuario tamanho={19} /> <span>Contextos</span>
+            </NavLink>
+            <NavLink
+              to="/app/convites"
+              aria-label="Meus convites"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeEmail tamanho={19} /> <span>Convites</span>
+            </NavLink>
+            <NavLink
               to="/app/configuracoes"
               aria-label="Configurações"
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
@@ -116,7 +162,7 @@ export function LayoutApp() {
           <p className={estilos.rodapeLateral}>Seu contexto financeiro permanece isolado e protegido.</p>
         </aside>
         <main className={estilos.principal}>
-          <Outlet />
+          <Outlet key={sessao.contextoAtivo.id} />
         </main>
       </div>
     </div>

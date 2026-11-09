@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { servicoAutenticacao, servicoConta } from '../servicos/instanciaAutenticacao'
-import { atualizarUsuarioPersistido } from '../servicos/armazenamentoSessao'
+import { servicoAutenticacao, servicoConta, servicoContextos } from '../servicos/instanciaAutenticacao'
+import { atualizarSessaoPersistida, atualizarUsuarioPersistido } from '../servicos/armazenamentoSessao'
 import type { EntradaLogin, SessaoAutenticada, UsuarioResumo } from '../tipos/autenticacao'
 import { ContextoAutenticacao } from './contextoAutenticacao'
 
@@ -25,6 +25,7 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
   const entrar = useCallback(async (entrada: EntradaLogin) => {
     const novaSessao = await servicoAutenticacao.entrar(entrada)
     definirSessao(novaSessao)
+    return novaSessao
   }, [])
 
   const sair = useCallback(async () => {
@@ -37,6 +38,44 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
     definirSessao((atual) => atual ? { ...atual, usuario } : atual)
   }, [])
 
+  const criarContexto = useCallback(async (nome: string) => {
+    const contexto = await servicoContextos.criarContexto(nome)
+    definirSessao((atual) => {
+      if (!atual) return atual
+      const novaSessao = { ...atual, contextos: [...atual.contextos, contexto] }
+      atualizarSessaoPersistida(novaSessao)
+      return novaSessao
+    })
+    return contexto
+  }, [])
+
+  const selecionarContexto = useCallback(async (contextoId: string) => {
+    const contexto = await servicoContextos.selecionarContexto(contextoId)
+    definirSessao((atual) => {
+      if (!atual) return atual
+      const novaSessao = {
+        ...atual,
+        contextoAtivo: contexto,
+        selecaoContextoNecessaria: false,
+      }
+      atualizarSessaoPersistida(novaSessao)
+      return novaSessao
+    })
+  }, [])
+
+  const recarregarContextos = useCallback(async () => {
+    const contextos = await servicoContextos.listarContextos()
+    definirSessao((atual) => {
+      if (!atual) return atual
+      const novaSessao = {
+        ...atual,
+        contextos: contextos.map(({ id, nome, tipo, papel }) => ({ id, nome, tipo, papel })),
+      }
+      atualizarSessaoPersistida(novaSessao)
+      return novaSessao
+    })
+  }, [])
+
   const encerrarConta = useCallback(async (aposEncerrar?: () => void) => {
     await servicoConta.encerrarConta()
     aposEncerrar?.()
@@ -44,8 +83,28 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
   }, [])
 
   const valor = useMemo(
-    () => ({ sessao, carregandoSessao, entrar, sair, atualizarUsuario, encerrarConta }),
-    [sessao, carregandoSessao, entrar, sair, atualizarUsuario, encerrarConta],
+    () => ({
+      sessao,
+      carregandoSessao,
+      entrar,
+      sair,
+      criarContexto,
+      selecionarContexto,
+      recarregarContextos,
+      atualizarUsuario,
+      encerrarConta,
+    }),
+    [
+      sessao,
+      carregandoSessao,
+      entrar,
+      sair,
+      criarContexto,
+      selecionarContexto,
+      recarregarContextos,
+      atualizarUsuario,
+      encerrarConta,
+    ],
   )
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>

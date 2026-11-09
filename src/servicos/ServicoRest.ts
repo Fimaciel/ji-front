@@ -1,6 +1,7 @@
 import type { ServicoAutenticacao } from './ServicoAutenticacao'
 import type { ServicoConta } from './ServicoConta'
 import type { ServicoFinanceiro } from './ServicoFinanceiro'
+import type { ServicoContextos } from './ServicoContextos'
 import {
   atualizarUsuarioPersistido,
   lerSessaoAtual,
@@ -12,6 +13,8 @@ import { ErroApi } from '../tipos/api'
 import {
   ErroAutenticacao,
   type ContextoAtivo,
+  type ContextoGerenciamento,
+  type ConviteContexto,
   type EntradaCadastroUsuario,
   type EntradaLogin,
   type EntradaRedefinicaoSenha,
@@ -66,6 +69,7 @@ interface AutenticacaoApi {
   expiraEm: string
   usuario: UsuarioApi
   contextoAtivoId: number | null
+  selecaoContextoNecessaria: boolean
   contextos: ContextoApi[]
 }
 
@@ -73,6 +77,25 @@ interface SessaoApi {
   usuario: UsuarioApi
   contextoAtivoId: number | null
   expiraEm: string
+  selecaoContextoNecessaria: boolean
+  contextos: ContextoApi[]
+}
+
+interface ContextoGerenciamentoApi extends ContextoApi {
+  quantidadeParticipantes: number
+  ativo: boolean
+}
+
+interface ConviteContextoApi {
+  id: number
+  contextoId: number
+  contextoNome: string
+  convidadoPor: string
+  papelProposto: ContextoAtivo['papel']
+  status: ConviteContexto['status']
+  dataCriacao: string
+  dataExpiracao: string
+  dataResposta?: string | null
 }
 
 interface ConfiguracaoApi {
@@ -173,6 +196,15 @@ function contextoAtivo(contexto: ContextoApi): ContextoAtivo {
   return { ...contexto, id: String(contexto.id) }
 }
 
+function mapearConvite(convite: ConviteContextoApi): ConviteContexto {
+  return {
+    ...convite,
+    id: String(convite.id),
+    contextoId: String(convite.contextoId),
+    dataResposta: convite.dataResposta ?? undefined,
+  }
+}
+
 function mapearConfiguracao(configuracao: ConfiguracaoApi): ConfiguracaoConta {
   return { ...configuracao, salarioMensal: Number(configuracao.salarioMensal) }
 }
@@ -215,7 +247,7 @@ function mapearOrcamento(orcamento: OrcamentoApi): Orcamento {
   }
 }
 
-export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFinanceiro {
+export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFinanceiro, ServicoContextos {
   private readonly urlBase: string
 
   constructor(urlBase: string) {
@@ -255,6 +287,8 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
         expiraEm: resposta.expiraEm,
         usuario: usuarioResumo(resposta.usuario),
         contextoAtivo: contextoAtivo(contexto),
+        contextos: resposta.contextos.map(contextoAtivo),
+        selecaoContextoNecessaria: resposta.selecaoContextoNecessaria,
       }
       persistirSessao(sessao, entrada.lembrar)
       return sessao
@@ -309,6 +343,12 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
         ...armazenada,
         expiraEm: resposta.expiraEm,
         usuario: usuarioResumo(resposta.usuario),
+        contextoAtivo: contextoAtivo(
+          resposta.contextos.find((item) => item.id === resposta.contextoAtivoId)
+            ?? resposta.contextos[0],
+        ),
+        contextos: resposta.contextos.map(contextoAtivo),
+        selecaoContextoNecessaria: resposta.selecaoContextoNecessaria,
       }
       const lembrada = localStorage.getItem('ji:sessao:v1') !== null
       persistirSessao(sessao, lembrada)
@@ -327,6 +367,55 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
     } finally {
       limparSessao()
     }
+  }
+
+  async listarContextos(): Promise<ContextoGerenciamento[]> {
+    const contextos = await this.requisitar<ContextoGerenciamentoApi[]>('/api/v1/contextos', {}, true)
+    return contextos.map((contexto) => ({ ...contexto, id: String(contexto.id) }))
+  }
+
+  async criarContexto(nome: string): Promise<ContextoGerenciamento> {
+    const contexto = await this.requisitar<ContextoGerenciamentoApi>('/api/v1/contextos', {
+      method: 'POST',
+      body: JSON.stringify({ nome }),
+    }, true)
+    return { ...contexto, id: String(contexto.id) }
+  }
+
+  async selecionarContexto(contextoId: string): Promise<ContextoAtivo> {
+    const contexto = await this.requisitar<ContextoApi>('/api/v1/contextos/ativo', {
+      method: 'PUT',
+      body: JSON.stringify({ contextoId: Number(contextoId) }),
+    }, true)
+    return contextoAtivo(contexto)
+  }
+
+  async listarConvites(): Promise<ConviteContexto[]> {
+    const convites = await this.requisitar<ConviteContextoApi[]>('/api/v1/convites', {}, true)
+    return convites.map(mapearConvite)
+  }
+
+  async detalharConvite(token: string): Promise<ConviteContexto> {
+    const convite = await this.requisitar<ConviteContextoApi>(
+      `/api/v1/convites/token/${encodeURIComponent(token)}`,
+    )
+    return mapearConvite(convite)
+  }
+
+  async aceitarConvite(conviteId: string): Promise<ConviteContexto> {
+    return mapearConvite(await this.requisitar<ConviteContextoApi>(
+      `/api/v1/convites/${encodeURIComponent(conviteId)}/aceite`,
+      { method: 'POST' },
+      true,
+    ))
+  }
+
+  async recusarConvite(conviteId: string): Promise<ConviteContexto> {
+    return mapearConvite(await this.requisitar<ConviteContextoApi>(
+      `/api/v1/convites/${encodeURIComponent(conviteId)}/recusa`,
+      { method: 'POST' },
+      true,
+    ))
   }
 
   async obterConta() {

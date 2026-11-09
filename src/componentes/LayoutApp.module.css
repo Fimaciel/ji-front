@@ -35,6 +35,8 @@
   gap: 12px;
 }
 
+.menuContexto { position: relative; }
+
 .contexto {
   min-height: 42px;
   padding: 6px 12px;
@@ -44,10 +46,49 @@
   flex-direction: column;
   justify-content: center;
   background: var(--ji-fundo);
+  cursor: pointer;
+  list-style: none;
 }
 
+.contexto::-webkit-details-marker { display: none; }
 .contexto span { font-size: 13px; font-weight: 500; }
 .contexto small { color: var(--ji-texto-secundario); font-size: 9px; letter-spacing: .25px; }
+.contexto svg { position: absolute; right: 8px; color: var(--ji-texto-secundario); }
+.menuContexto[open] .contexto, .contexto:hover { border-color: var(--ji-primaria); }
+
+.listaContextos {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  padding: 8px;
+  border: 1px solid var(--ji-borda);
+  border-radius: 10px;
+  background: var(--ji-fundo);
+  box-shadow: var(--ji-sombra-menu);
+}
+.listaContextos p { margin: 4px 8px 7px; color: var(--ji-texto-terciario); font-size: 10px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
+.listaContextos button, .listaContextos a {
+  width: 100%;
+  min-height: 44px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  background: transparent;
+  color: var(--ji-texto);
+  cursor: pointer;
+  text-decoration: none;
+}
+.listaContextos button:hover, .listaContextos a:hover { background: var(--ji-fundo-sutil); }
+.listaContextos button span { font-size: 12px; font-weight: 500; }
+.listaContextos button small { margin-top: 2px; color: var(--ji-texto-secundario); font-size: 10px; text-transform: capitalize; }
+.listaContextos .contextoAtivo { background: var(--ji-primaria-suave); color: var(--ji-primaria); }
+.listaContextos a { min-height: 38px; margin-top: 5px; border-top: 1px solid var(--ji-borda-suave); border-radius: 0 0 7px 7px; color: var(--ji-primaria); font-size: 11px; font-weight: 500; }
 
 .menuUsuario { position: relative; }
 
@@ -197,7 +238,8 @@
     border-right: 0;
     border-bottom: 1px solid var(--ji-borda-suave);
   }
-  .barraLateral nav { grid-template-columns: repeat(5, 1fr); }
+  .barraLateral { overflow-x: auto; }
+  .barraLateral nav { min-width: 520px; grid-template-columns: repeat(7, 1fr); }
   .itemNavegacao { min-height: 40px; gap: 7px; }
   .itemNavegacao span { display: inline; }
 }

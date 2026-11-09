@@ -50,6 +50,16 @@ export function atualizarUsuarioPersistido(usuario: UsuarioResumo) {
   }
 }
 
+export function atualizarSessaoPersistida(sessao: SessaoAutenticada) {
+  for (const armazenamento of [sessionStorage, localStorage]) {
+    if (!armazenamento.getItem(CHAVE_SESSAO)) continue
+    armazenamento.setItem(
+      CHAVE_SESSAO,
+      JSON.stringify({ versao: 1, sessao } satisfies RegistroSessao),
+    )
+  }
+}
+
 export function limparSessao() {
   sessionStorage.removeItem(CHAVE_SESSAO)
   localStorage.removeItem(CHAVE_SESSAO)

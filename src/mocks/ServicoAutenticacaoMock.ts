@@ -1,7 +1,9 @@
 import type { ServicoAutenticacao } from '../servicos/ServicoAutenticacao'
 import type { ServicoConta } from '../servicos/ServicoConta'
+import type { ServicoContextos } from '../servicos/ServicoContextos'
 import {
   atualizarUsuarioPersistido,
+  atualizarSessaoPersistida,
   lerSessaoAtual,
   limparArmazenamentoJi,
   limparSessao,
@@ -15,6 +17,8 @@ import {
   type EntradaRedefinicaoSenha,
   type EstadoTokenRedefinicao,
   type ContextoAtivo,
+  type ContextoGerenciamento,
+  type ConviteContexto,
   type ResultadoSolicitacaoRecuperacao,
   type SessaoAutenticada,
   type UsuarioResumo,
@@ -58,7 +62,7 @@ interface ContaUsuarioMock {
   usuario: UsuarioMock
   credencial: CredencialMock
   configuracao: ConfiguracaoUsuarioMock
-  contextoPessoal: ContextoAtivo
+  contextos: ContextoAtivo[]
 }
 
 interface RegistroToken {
@@ -77,6 +81,10 @@ interface EventoAuditoria {
     | 'ALTERACAO_TEMA'
     | 'RESTAURACAO_CONFIGURACAO'
     | 'ENCERRAMENTO_CONTA'
+    | 'CRIACAO_CONTEXTO'
+    | 'SELECAO_CONTEXTO'
+    | 'ACEITE_CONVITE'
+    | 'RECUSA_CONVITE'
   dataHora: string
   usuarioId?: string
 }
@@ -84,6 +92,7 @@ interface EventoAuditoria {
 let usuarios = new Map<string, ContaUsuarioMock>()
 let tokens = new Map<string, RegistroToken>()
 let eventosAuditoria: EventoAuditoria[] = []
+let convites: ConviteContexto[] = []
 
 function normalizarEmail(email: string) {
   return email.trim().toLocaleLowerCase('pt-BR')
@@ -151,7 +160,7 @@ function criarDadosIniciais() {
           resumoSenha: RESUMO_CREDENCIAL_DEMONSTRACAO,
         },
         configuracao: criarConfiguracaoPadrao(),
-        contextoPessoal: criarContextoPessoal(usuarioDemonstracao.id),
+        contextos: [criarContextoPessoal(usuarioDemonstracao.id)],
       },
     ],
   ])
@@ -166,6 +175,18 @@ function criarDadosIniciais() {
     ],
   ])
   eventosAuditoria = []
+  convites = [
+    {
+      id: 'convite-demonstracao',
+      contextoId: 'contexto-familia-convidada',
+      contextoNome: 'Família Oliveira',
+      convidadoPor: 'Marina Oliveira',
+      papelProposto: 'COLABORADOR',
+      status: 'PENDENTE',
+      dataCriacao: agora,
+      dataExpiracao: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ]
 }
 
 criarDadosIniciais()
@@ -190,11 +211,13 @@ function criarSessao(conta: ContaUsuarioMock, lembrar: boolean): SessaoAutentica
       nomeCompleto: conta.usuario.nomeCompleto,
       email: conta.usuario.email,
     },
-    contextoAtivo: { ...conta.contextoPessoal },
+    contextoAtivo: { ...conta.contextos[0] },
+    contextos: conta.contextos.map((contexto) => ({ ...contexto })),
+    selecaoContextoNecessaria: conta.contextos.length > 1,
   }
 }
 
-export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoConta {
+export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoConta, ServicoContextos {
   async cadastrarUsuario(entrada: EntradaCadastroUsuario) {
     await aguardarLatencia()
     const email = normalizarEmail(entrada.email)
@@ -234,7 +257,7 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
         resumoSenha: await resumirSenha(entrada.senha, sal),
       },
       configuracao: criarConfiguracaoPadrao(),
-      contextoPessoal: criarContextoPessoal(usuario.id),
+      contextos: [criarContextoPessoal(usuario.id)],
     })
   }
 
@@ -332,6 +355,108 @@ export class ServicoAutenticacaoMock implements ServicoAutenticacao, ServicoCont
       usuarioId: sessao?.usuario.id,
     })
     limparSessao()
+  }
+
+  async listarContextos(): Promise<ContextoGerenciamento[]> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const sessao = lerSessaoAtual()
+    return conta.contextos.map((contexto) => ({
+      ...contexto,
+      quantidadeParticipantes: contexto.tipo === 'PESSOAL' ? 1 : 2,
+      ativo: contexto.id === sessao?.contextoAtivo.id && !sessao.selecaoContextoNecessaria,
+    }))
+  }
+
+  async criarContexto(nome: string): Promise<ContextoGerenciamento> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const contexto: ContextoAtivo = {
+      id: `contexto-${conta.usuario.id}-${conta.contextos.length + 1}`,
+      nome: nome.trim(),
+      tipo: 'COMPARTILHADO',
+      papel: 'ADMINISTRADOR',
+    }
+    conta.contextos.push(contexto)
+    const sessao = lerSessaoAtual()
+    if (sessao) {
+      atualizarSessaoPersistida({ ...sessao, contextos: conta.contextos.map((item) => ({ ...item })) })
+    }
+    eventosAuditoria.push({
+      acao: 'CRIACAO_CONTEXTO',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return { ...contexto, quantidadeParticipantes: 1, ativo: false }
+  }
+
+  async selecionarContexto(contextoId: string): Promise<ContextoAtivo> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const contexto = conta.contextos.find((item) => item.id === contextoId)
+    if (!contexto) throw new ErroApi('contexto-nao-encontrado', 'Contexto não encontrado.', {}, 404)
+    const sessao = lerSessaoAtual()
+    if (sessao) {
+      atualizarSessaoPersistida({
+        ...sessao,
+        contextoAtivo: { ...contexto },
+        contextos: conta.contextos.map((item) => ({ ...item })),
+        selecaoContextoNecessaria: false,
+      })
+    }
+    eventosAuditoria.push({
+      acao: 'SELECAO_CONTEXTO',
+      dataHora: new Date().toISOString(),
+      usuarioId: conta.usuario.id,
+    })
+    return { ...contexto }
+  }
+
+  async listarConvites(): Promise<ConviteContexto[]> {
+    await aguardarLatencia()
+    this.obterContaAutenticada()
+    return convites.map((convite) => ({ ...convite }))
+  }
+
+  async detalharConvite(token: string): Promise<ConviteContexto> {
+    await aguardarLatencia()
+    const convite = token === 'convite-demonstracao' ? convites[0] : undefined
+    if (!convite) throw new ErroApi('convite-invalido', 'Este convite não é válido.', {}, 400)
+    return { ...convite }
+  }
+
+  async aceitarConvite(conviteId: string): Promise<ConviteContexto> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const convite = convites.find((item) => item.id === conviteId)
+    if (!convite || convite.status !== 'PENDENTE') {
+      throw new ErroApi('convite-indisponivel', 'Este convite não está mais disponível.', {}, 400)
+    }
+    convite.status = 'ACEITO'
+    convite.dataResposta = new Date().toISOString()
+    if (!conta.contextos.some((item) => item.id === convite.contextoId)) {
+      conta.contextos.push({
+        id: convite.contextoId,
+        nome: convite.contextoNome,
+        tipo: 'COMPARTILHADO',
+        papel: convite.papelProposto,
+      })
+    }
+    eventosAuditoria.push({ acao: 'ACEITE_CONVITE', dataHora: convite.dataResposta, usuarioId: conta.usuario.id })
+    return { ...convite }
+  }
+
+  async recusarConvite(conviteId: string): Promise<ConviteContexto> {
+    await aguardarLatencia()
+    const conta = this.obterContaAutenticada()
+    const convite = convites.find((item) => item.id === conviteId)
+    if (!convite || convite.status !== 'PENDENTE') {
+      throw new ErroApi('convite-indisponivel', 'Este convite não está mais disponível.', {}, 400)
+    }
+    convite.status = 'RECUSADO'
+    convite.dataResposta = new Date().toISOString()
+    eventosAuditoria.push({ acao: 'RECUSA_CONVITE', dataHora: convite.dataResposta, usuarioId: conta.usuario.id })
+    return { ...convite }
   }
 
   async obterConta(): Promise<ContaUsuario> {
@@ -491,6 +616,7 @@ export function obterContaUsuarioMock(email: string) {
   return {
     usuario: { ...conta.usuario },
     configuracao: { ...conta.configuracao },
-    contextoPessoal: { ...conta.contextoPessoal },
+    contextoPessoal: { ...conta.contextos[0] },
+    contextos: conta.contextos.map((contexto) => ({ ...contexto })),
   }
 }

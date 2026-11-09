@@ -3,6 +3,7 @@ import { ServicoFinanceiroMock } from '../mocks/ServicoFinanceiroMock'
 import type { ServicoAutenticacao } from './ServicoAutenticacao'
 import type { ServicoConta } from './ServicoConta'
 import type { ServicoFinanceiro } from './ServicoFinanceiro'
+import type { ServicoContextos } from './ServicoContextos'
 import { ServicoRest } from './ServicoRest'
 
 const usarMock = import.meta.env.MODE === 'test' || import.meta.env.VITE_USAR_MOCK === 'true'
@@ -14,3 +15,4 @@ const adaptadorFinanceiro = usarMock ? new ServicoFinanceiroMock() : adaptadorRe
 export const servicoAutenticacao: ServicoAutenticacao = adaptador
 export const servicoConta: ServicoConta = adaptador
 export const servicoFinanceiro: ServicoFinanceiro = adaptadorFinanceiro
+export const servicoContextos: ServicoContextos = adaptador

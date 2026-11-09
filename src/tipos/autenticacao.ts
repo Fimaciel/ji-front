@@ -20,6 +20,27 @@ export interface SessaoAutenticada {
   expiraEm: string | null
   usuario: UsuarioResumo
   contextoAtivo: ContextoAtivo
+  contextos: ContextoAtivo[]
+  selecaoContextoNecessaria: boolean
+}
+
+export interface ContextoGerenciamento extends ContextoAtivo {
+  quantidadeParticipantes: number
+  ativo: boolean
+}
+
+export type StatusConvite = 'PENDENTE' | 'ACEITO' | 'RECUSADO' | 'EXPIRADO' | 'CANCELADO'
+
+export interface ConviteContexto {
+  id: string
+  contextoId: string
+  contextoNome: string
+  convidadoPor: string
+  papelProposto: PapelContexto
+  status: StatusConvite
+  dataCriacao: string
+  dataExpiracao: string
+  dataResposta?: string
 }
 
 export interface EntradaCadastroUsuario {
