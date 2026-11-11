@@ -15,6 +15,8 @@ import { TelaContextos } from './telas/TelaContextos'
 import { TelaConvites } from './telas/TelaConvites'
 import { TelaConvitePublico } from './telas/TelaConvitePublico'
 import { TelaColaboracao } from './telas/TelaColaboracao'
+import { TelaImportacoes } from './telas/TelaImportacoes'
+import { TelaRelatorios } from './telas/TelaRelatorios'
 
 export function App() {
   return (
@@ -29,6 +31,8 @@ export function App() {
       <Route path="/app" element={<RotaProtegida><LayoutApp /></RotaProtegida>}>
         <Route index element={<TelaApp />} />
         <Route path="transacoes" element={<TelaTransacoes />} />
+        <Route path="importacoes" element={<TelaImportacoes />} />
+        <Route path="relatorios" element={<TelaRelatorios />} />
         <Route path="orcamentos" element={<TelaOrcamentos />} />
         <Route path="categorias" element={<TelaCategorias />} />
         <Route path="configuracoes" element={<TelaConfiguracoes />} />

@@ -124,3 +124,15 @@ export function IconeSetaCima(propriedades: PropriedadesIcone) {
 export function IconeSetaBaixo(propriedades: PropriedadesIcone) {
   return <IconeBase {...propriedades}><path d="m6 9 6 6 6-6" /></IconeBase>
 }
+
+export function IconeUpload(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M12 16V4M7 9l5-5 5 5" /><path d="M5 20h14" /></IconeBase>
+}
+
+export function IconeDownload(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M12 4v12M7 11l5 5 5-5" /><path d="M5 20h14" /></IconeBase>
+}
+
+export function IconeRelatorio(propriedades: PropriedadesIcone) {
+  return <IconeBase {...propriedades}><path d="M5 3h10l4 4v14H5Z" /><path d="M15 3v5h4M8 17v-3M12 17v-6M16 17v-4" /></IconeBase>
+}

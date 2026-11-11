@@ -1,0 +1,106 @@
+.pagina {
+  width: min(100% - 48px, 1180px);
+  margin: 0 auto;
+  padding: 42px 0 64px;
+}
+
+.cabecalho { margin-bottom: 26px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.cabecalho p, .secaoTitulo p { margin: 0 0 5px; color: var(--ji-texto-secundario); font-size: 11px; }
+.cabecalho h1 { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 600; letter-spacing: -.45px; }
+.cabecalho span { display: block; margin-top: 7px; color: var(--ji-texto-secundario); font-size: 13px; }
+.acoesCabecalho { display: flex; gap: 8px; }
+
+.gradeImportacao { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, .75fr); gap: 28px; }
+.painel, .historico { border-top: 2px solid var(--ji-texto); background: var(--ji-fundo); }
+.secaoTitulo { padding: 17px 0 14px; border-bottom: 1px solid var(--ji-borda-suave); }
+.secaoTitulo h2 { margin: 0; font-size: 16px; font-weight: 600; }
+
+.zonaArquivo {
+  min-height: 250px;
+  margin-top: 20px;
+  padding: 36px;
+  border: 1px dashed var(--ji-borda);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: var(--ji-fundo-mudo);
+}
+.zonaArquivo > div { max-width: 430px; display: grid; justify-items: center; gap: 9px; }
+.iconeArquivo { width: 46px; height: 46px; border-radius: 9px; display: grid; place-items: center; background: var(--ji-primaria-suave); color: var(--ji-primaria); }
+.zonaArquivo strong { margin-top: 4px; font-size: 15px; }
+.zonaArquivo p { margin: 0; color: var(--ji-texto-secundario); font-size: 12px; line-height: 1.55; }
+.zonaArquivo input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.selecionarArquivo { min-height: 40px; margin-top: 5px; padding: 0 14px; border: 1px solid var(--ji-borda); border-radius: 7px; display: inline-flex; align-items: center; gap: 7px; background: var(--ji-fundo); color: var(--ji-texto); font-size: 12px; font-weight: 600; cursor: pointer; }
+.arquivoSelecionado { margin-top: 16px; padding: 13px; border: 1px solid var(--ji-borda); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.arquivoSelecionado div { min-width: 0; }
+.arquivoSelecionado strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.arquivoSelecionado small { color: var(--ji-texto-secundario); font-size: 10px; }
+
+.listaHistorico { margin: 0; padding: 0; list-style: none; }
+.listaHistorico li { padding: 15px 0; border-bottom: 1px solid var(--ji-borda-suave); }
+.listaHistorico strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
+.listaHistorico div { margin-top: 5px; display: flex; justify-content: space-between; gap: 8px; color: var(--ji-texto-secundario); font-size: 10px; }
+.status { width: fit-content; margin-top: 7px; padding: 3px 7px; border-radius: 999px; background: var(--ji-positiva-suave); color: var(--ji-positiva); font-size: 9px; font-weight: 600; }
+.statusDesfeita { background: var(--ji-fundo-sutil); color: var(--ji-texto-secundario); }
+
+.resumoAnalise { margin: 18px 0; border-top: 1px solid var(--ji-borda); border-bottom: 1px solid var(--ji-borda); display: grid; grid-template-columns: repeat(3, 1fr); }
+.resumoAnalise div { min-height: 78px; padding: 14px; border-right: 1px solid var(--ji-borda-suave); display: grid; align-content: center; gap: 5px; }
+.resumoAnalise div:last-child { border-right: 0; }
+.resumoAnalise span { color: var(--ji-texto-secundario); font-size: 10px; }
+.resumoAnalise strong { font-size: 18px; }
+
+.tabelaRolagem { overflow-x: auto; }
+.tabela { width: 100%; border-collapse: collapse; }
+.tabela th { padding: 9px 8px; border-bottom: 1px solid var(--ji-borda); color: var(--ji-texto-secundario); font-size: 9px; font-weight: 500; text-align: left; }
+.tabela td { padding: 11px 8px; border-bottom: 1px solid var(--ji-borda-suave); color: var(--ji-texto-secundario); font-size: 11px; }
+.tabela td strong { color: var(--ji-texto); font-weight: 500; }
+.tabela select { max-width: 150px; min-height: 34px; border: 1px solid var(--ji-borda); border-radius: 6px; background: var(--ji-fundo); color: var(--ji-texto); font-size: 10px; }
+.duplicada { opacity: .52; }
+.rodapeAnalise { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.rodapeAnalise span { color: var(--ji-texto-secundario); font-size: 11px; }
+
+.filtros { margin-bottom: 24px; padding: 14px; border: 1px solid var(--ji-borda-suave); border-radius: 9px; display: grid; grid-template-columns: 1fr 1fr .8fr 1.1fr auto; gap: 9px; align-items: end; background: var(--ji-fundo-mudo); }
+.campo { display: grid; gap: 5px; }
+.campo span { color: var(--ji-texto-secundario); font-size: 10px; }
+.campo input, .campo select { width: 100%; min-height: 40px; padding: 0 9px; border: 1px solid var(--ji-borda); border-radius: 7px; background: var(--ji-fundo); color: var(--ji-texto); font-size: 12px; }
+.contextos { grid-column: 1 / -1; padding-top: 4px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.contextos label { display: inline-flex; align-items: center; gap: 6px; color: var(--ji-texto-secundario); font-size: 11px; }
+
+.faixaResumo { border-top: 1px solid var(--ji-borda); border-bottom: 1px solid var(--ji-borda); display: grid; grid-template-columns: 1.2fr repeat(3, 1fr); background: var(--ji-fundo); }
+.saldo, .indicador { min-height: 112px; padding: 20px; border-right: 1px solid var(--ji-borda-suave); display: grid; align-content: center; gap: 7px; }
+.indicador:last-child { border-right: 0; }
+.saldo span, .indicador span { color: var(--ji-texto-secundario); font-size: 10px; }
+.saldo strong { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.6px; }
+.indicador strong { font-size: 17px; }
+.positivo { color: var(--ji-positiva); }
+.negativo { color: var(--ji-negativa); }
+
+.gradeRelatorio { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .7fr); gap: 28px; }
+.barras { padding-top: 10px; }
+.barra { padding: 10px 0; border-bottom: 1px solid var(--ji-borda-suave); }
+.barra div { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; }
+.barra span { height: 5px; margin-top: 7px; border-radius: 999px; display: block; background: var(--ji-trilho); overflow: hidden; }
+.barra i { height: 100%; display: block; border-radius: inherit; background: var(--ji-primaria); }
+.estado { min-height: 210px; display: grid; place-items: center; color: var(--ji-texto-secundario); font-size: 12px; text-align: center; }
+.acoesExportacao { display: flex; gap: 8px; }
+
+@media (max-width: 950px) {
+  .gradeImportacao, .gradeRelatorio { grid-template-columns: 1fr; }
+  .filtros { grid-template-columns: 1fr 1fr; }
+  .filtros > button { width: 100%; }
+  .faixaResumo { grid-template-columns: 1fr 1fr; }
+  .saldo { grid-column: 1 / -1; border-bottom: 1px solid var(--ji-borda); }
+}
+
+@media (max-width: 719px) {
+  .pagina { width: auto; padding: 28px 16px 86px; }
+  .cabecalho { align-items: flex-start; flex-direction: column; }
+  .acoesCabecalho { width: 100%; }
+  .acoesCabecalho button { flex: 1; }
+  .zonaArquivo { min-height: 220px; padding: 25px 18px; }
+  .filtros { grid-template-columns: 1fr; }
+  .contextos { grid-column: auto; }
+  .tabela { min-width: 680px; }
+  .rodapeAnalise { align-items: stretch; flex-direction: column; }
+}

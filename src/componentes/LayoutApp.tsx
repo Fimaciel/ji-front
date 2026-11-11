@@ -12,6 +12,8 @@ import {
   IconeTransacoes,
   IconeUsuario,
   IconeEmail,
+  IconeRelatorio,
+  IconeUpload,
 } from './Icones'
 import { LogoJi } from './LogoJi'
 import estilos from './LayoutApp.module.css'
@@ -124,6 +126,13 @@ export function LayoutApp() {
               <IconeTransacoes tamanho={19} /> <span>Transações</span>
             </NavLink>
             <NavLink
+              to="/app/importacoes"
+              aria-label="Importar transações"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeUpload tamanho={19} /> <span>Importações</span>
+            </NavLink>
+            <NavLink
               to="/app/orcamentos"
               aria-label="Orçamentos"
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
@@ -136,6 +145,13 @@ export function LayoutApp() {
               className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
             >
               <IconeEtiqueta tamanho={19} /> <span>Categorias</span>
+            </NavLink>
+            <NavLink
+              to="/app/relatorios"
+              aria-label="Relatórios"
+              className={({ isActive }) => `${estilos.itemNavegacao} ${isActive ? estilos.ativo : ''}`}
+            >
+              <IconeRelatorio tamanho={19} /> <span>Relatórios</span>
             </NavLink>
             <NavLink
               to="/app/contextos"
