@@ -1,11 +1,12 @@
-# Ji Front — Sprints 1 a 6
+# Ji Front — Implementação funcional completa
 
 Interface React e TypeScript do Gerenciador Financeiro Pessoal Ji. A aplicação
 consome a API REST por padrão e inclui autenticação, recuperação de senha,
 layout interno responsivo, a tela unificada de configurações da Sprint 2 e o
 gerenciamento de categorias e transações da Sprint 3, além do dashboard e dos
 orçamentos mensais por categoria da Sprint 4, os contextos compartilhados da
-Sprint 5 e a colaboração da Sprint 6.
+Sprint 5 e a colaboração da Sprint 6. As rotas finais cobrem importação
+revisável de PDF/XLSX e relatórios gerais com exportação.
 
 ## Configuração e execução
 
@@ -110,6 +111,20 @@ A rota protegida `/app/colaboracao` reúne a gestão do contexto compartilhado:
 As ações administrativas aparecem apenas para administradores. Em contexto
 pessoal, a tela orienta a selecionar ou criar um contexto compartilhado.
 
+## Importações e relatórios
+
+As rotas protegidas `/app/importacoes` e `/app/relatorios` oferecem:
+
+- seleção ou arraste de PDF/XLSX com limite de 10 MB;
+- revisão dos lançamentos, indicação de duplicados e ajuste de categoria;
+- histórico e desfazimento da última importação concluída;
+- filtros por período, tipo, categoria e contextos acessíveis;
+- resumo de entradas, saídas, saldo e distribuição por categoria;
+- download dos relatórios em PDF e XLSX.
+
+O dependente pode consultar relatórios, mas não confirma nem desfaz
+importações. O modo mock mantém o mesmo contrato para testes e demonstração.
+
 ## Verificações
 
 ```bash
@@ -137,3 +152,5 @@ A Sprint 4 está registrada em
 [`docs/sprint-4-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-4-rastreabilidade.md).
 A Sprint 6 está registrada em
 [`docs/sprint-6-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-6-rastreabilidade.md).
+A entrega final está registrada em
+[`docs/sprint-7-rastreabilidade.md`](https://github.com/Fimaciel/ji-backend/blob/main/docs/sprint-7-rastreabilidade.md).
