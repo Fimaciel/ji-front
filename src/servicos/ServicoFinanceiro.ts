@@ -1,11 +1,18 @@
 import type {
+  AnaliseImportacao,
+  ArquivoDownload,
   Categoria,
   DashboardResumo,
+  EntradaConfirmacaoImportacao,
   EntradaOrcamento,
   EntradaTransacao,
+  FiltrosRelatorio,
   FiltrosTransacao,
+  FormatoRelatorio,
+  ImportacaoArquivo,
   Orcamento,
   PaginaTransacoes,
+  RelatorioResumo,
   ResumoOrcamentos,
   Transacao,
 } from '../tipos/financeiro'
@@ -24,4 +31,10 @@ export interface ServicoFinanceiro {
   criarOrcamento(entrada: EntradaOrcamento): Promise<Orcamento>
   editarOrcamento(orcamentoId: string, entrada: EntradaOrcamento): Promise<Orcamento>
   excluirOrcamento(orcamentoId: string): Promise<void>
+  analisarImportacao(arquivo: File): Promise<AnaliseImportacao>
+  confirmarImportacao(entrada: EntradaConfirmacaoImportacao): Promise<ImportacaoArquivo>
+  listarImportacoes(): Promise<ImportacaoArquivo[]>
+  desfazerUltimaImportacao(): Promise<ImportacaoArquivo>
+  obterRelatorio(filtros: FiltrosRelatorio): Promise<RelatorioResumo>
+  exportarRelatorio(filtros: FiltrosRelatorio, formato: FormatoRelatorio): Promise<ArquivoDownload>
 }

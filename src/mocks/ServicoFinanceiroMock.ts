@@ -2,13 +2,20 @@ import type { ServicoFinanceiro } from '../servicos/ServicoFinanceiro'
 import { dataLocalIso } from '../servicos/dataLocal'
 import { ErroApi } from '../tipos/api'
 import type {
+  AnaliseImportacao,
+  ArquivoDownload,
   Categoria,
   DashboardResumo,
+  EntradaConfirmacaoImportacao,
   EntradaOrcamento,
   EntradaTransacao,
+  FiltrosRelatorio,
   FiltrosTransacao,
+  FormatoRelatorio,
+  ImportacaoArquivo,
   Orcamento,
   PaginaTransacoes,
+  RelatorioResumo,
   ResumoOrcamentos,
   Transacao,
 } from '../tipos/financeiro'
@@ -21,15 +28,19 @@ const categoriasPadrao: Categoria[] = [
   { id: '3', nome: 'Saúde', tipo: 'PADRAO' },
   { id: '4', nome: 'Lazer', tipo: 'PADRAO' },
   { id: '5', nome: 'Salário', tipo: 'PADRAO' },
+  { id: '7', nome: 'Outros', tipo: 'PADRAO' },
 ]
 
 let categorias: Categoria[] = []
 let transacoes: Transacao[] = []
 type OrcamentoArmazenado = EntradaOrcamento & { id: string; categoria: Categoria }
 let orcamentos: OrcamentoArmazenado[] = []
-let proximoIdCategoria = 7
+let importacoes: ImportacaoArquivo[] = []
+const transacoesPorImportacao = new Map<string, string[]>()
+let proximoIdCategoria = 8
 let proximoIdTransacao = 3
 let proximoIdOrcamento = 3
+let proximoIdImportacao = 1
 
 function dataLocal(diasAtras = 0) {
   const data = new Date()
@@ -68,9 +79,12 @@ function criarDadosIniciais() {
       mesReferencia: mesAtual(),
     },
   ]
-  proximoIdCategoria = 7
+  importacoes = []
+  transacoesPorImportacao.clear()
+  proximoIdCategoria = 8
   proximoIdTransacao = 3
   proximoIdOrcamento = 3
+  proximoIdImportacao = 1
 }
 
 criarDadosIniciais()
@@ -354,6 +368,137 @@ export class ServicoFinanceiroMock implements ServicoFinanceiro {
       throw new ErroApi('orcamento-nao-encontrado', 'O orçamento não foi encontrado.', {}, 404)
     }
     orcamentos = orcamentos.filter((orcamento) => orcamento.id !== orcamentoId)
+  }
+
+  async analisarImportacao(arquivo: File): Promise<AnaliseImportacao> {
+    await aguardarLatencia()
+    const nome = arquivo.name.toLocaleLowerCase('pt-BR')
+    if (!nome.endsWith('.pdf') && !nome.endsWith('.xlsx')) {
+      throw new ErroApi('formato-nao-suportado', 'Envie um arquivo PDF ou XLSX.')
+    }
+    if (arquivo.size > 10 * 1024 * 1024) {
+      throw new ErroApi('arquivo-muito-grande', 'O arquivo deve ter no máximo 10 MB.')
+    }
+    const registros = [
+      {
+        linha: 2, data: dataLocal(1), descricao: 'Mercado importado', valor: 126.8,
+        tipo: 'SAIDA' as const, categoriaSugerida: { ...categoriasPadrao[0] }, duplicado: false,
+      },
+      {
+        linha: 3, data: dataLocal(2), descricao: 'Rendimento importado', valor: 3200,
+        tipo: 'ENTRADA' as const, categoriaSugerida: { ...categoriasPadrao[4] }, duplicado: false,
+      },
+    ]
+    return {
+      nomeArquivo: arquivo.name,
+      formato: nome.endsWith('.pdf') ? 'PDF' : 'XLSX',
+      totalLidos: registros.length,
+      totalNovos: registros.length,
+      totalDuplicados: 0,
+      registros,
+    }
+  }
+
+  async confirmarImportacao(entrada: EntradaConfirmacaoImportacao): Promise<ImportacaoArquivo> {
+    await aguardarLatencia()
+    if (entrada.registros.length === 0) {
+      throw new ErroApi('dados-invalidos', 'Selecione ao menos um registro para importar.')
+    }
+    const agora = new Date().toISOString()
+    const ids: string[] = []
+    for (const registro of entrada.registros) {
+      const categoria = categoriaDisponivel(registro.categoriaId)
+      if (!categoria) throw new ErroApi('categoria-indisponivel', 'A categoria não está disponível.')
+      const id = String(proximoIdTransacao++)
+      ids.push(id)
+      transacoes.push({
+        id, ...registro, categoria: { ...categoria }, dataCriacao: agora, dataAtualizacao: agora,
+      })
+    }
+    const importacao: ImportacaoArquivo = {
+      id: String(proximoIdImportacao++),
+      nomeArquivo: entrada.nomeArquivo,
+      formato: entrada.formato,
+      status: 'CONCLUIDA',
+      totalLidos: entrada.totalLidos,
+      totalImportados: entrada.registros.length,
+      totalDuplicados: entrada.totalDuplicados,
+      executadoPor: 'Pessoa Teste',
+      dataCriacao: agora,
+    }
+    importacoes.unshift(importacao)
+    transacoesPorImportacao.set(importacao.id, ids)
+    return { ...importacao }
+  }
+
+  async listarImportacoes(): Promise<ImportacaoArquivo[]> {
+    await aguardarLatencia()
+    return importacoes.map((item) => ({ ...item }))
+  }
+
+  async desfazerUltimaImportacao(): Promise<ImportacaoArquivo> {
+    await aguardarLatencia()
+    const importacao = importacoes.find((item) => item.status === 'CONCLUIDA')
+    if (!importacao) throw new ErroApi('importacao-nao-encontrada', 'Não há importação para desfazer.', {}, 404)
+    const ids = new Set(transacoesPorImportacao.get(importacao.id) ?? [])
+    transacoes = transacoes.filter((transacao) => !ids.has(transacao.id))
+    importacao.status = 'DESFEITA'
+    importacao.dataDesfeita = new Date().toISOString()
+    return { ...importacao }
+  }
+
+  async obterRelatorio(filtros: FiltrosRelatorio): Promise<RelatorioResumo> {
+    await aguardarLatencia()
+    const itens = transacoes
+      .filter((item) => item.data >= filtros.dataInicial && item.data <= filtros.dataFinal)
+      .filter((item) => !filtros.tipo || item.tipo === filtros.tipo)
+      .filter((item) => !filtros.categoriaId || item.categoria.id === filtros.categoriaId)
+      .sort((a, b) => a.data.localeCompare(b.data))
+    const totalEntradas = itens.filter((item) => item.tipo === 'ENTRADA')
+      .reduce((total, item) => total + item.valor, 0)
+    const totalSaidas = itens.filter((item) => item.tipo === 'SAIDA')
+      .reduce((total, item) => total + item.valor, 0)
+    const porMes = new Map<string, { entradas: number; saidas: number }>()
+    const porCategoria = new Map<string, { quantidade: number; total: number }>()
+    for (const item of itens) {
+      const mes = porMes.get(item.data.slice(0, 7)) ?? { entradas: 0, saidas: 0 }
+      mes[item.tipo === 'ENTRADA' ? 'entradas' : 'saidas'] += item.valor
+      porMes.set(item.data.slice(0, 7), mes)
+      const categoria = porCategoria.get(item.categoria.nome) ?? { quantidade: 0, total: 0 }
+      categoria.quantidade += 1
+      categoria.total += item.valor
+      porCategoria.set(item.categoria.nome, categoria)
+    }
+    return {
+      ...filtros,
+      contextos: ['Pessoal'],
+      totalEntradas,
+      totalSaidas,
+      saldo: totalEntradas - totalSaidas,
+      quantidadeTransacoes: itens.length,
+      fluxoMensal: [...porMes].map(([mes, valores]) => ({ mes, ...valores })),
+      categorias: [...porCategoria].map(([categoria, valores]) => ({
+        categoria, ...valores, media: valores.total / valores.quantidade,
+      })),
+      transacoes: itens.map((item) => ({
+        id: item.id, contexto: 'Pessoal', data: item.data, descricao: item.descricao,
+        categoria: item.categoria.nome, tipo: item.tipo, valor: item.valor,
+      })),
+    }
+  }
+
+  async exportarRelatorio(
+    filtros: FiltrosRelatorio,
+    formato: FormatoRelatorio,
+  ): Promise<ArquivoDownload> {
+    const relatorio = await this.obterRelatorio(filtros)
+    if (relatorio.quantidadeTransacoes === 0) {
+      throw new ErroApi('relatorio-sem-dados', 'Não há dados para exportar nesse período.', {}, 422)
+    }
+    return {
+      conteudo: new Blob([JSON.stringify(relatorio, null, 2)], { type: 'application/octet-stream' }),
+      nome: `relatorio-ji.${formato.toLowerCase()}`,
+    }
   }
 
   private validarOrcamento(entrada: EntradaOrcamento, orcamentoIgnoradoId?: string) {

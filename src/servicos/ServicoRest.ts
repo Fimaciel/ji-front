@@ -36,15 +36,23 @@ import type {
   TemaUsuario,
 } from '../tipos/conta'
 import type {
+  AnaliseImportacao,
+  ArquivoDownload,
   Categoria,
   CategoriaDashboard,
   DashboardResumo,
+  EntradaConfirmacaoImportacao,
   EntradaOrcamento,
   EntradaTransacao,
+  FiltrosRelatorio,
   FiltrosTransacao,
+  FormatoImportacao,
+  FormatoRelatorio,
   FluxoDiario,
+  ImportacaoArquivo,
   Orcamento,
   PaginaTransacoes,
+  RelatorioResumo,
   ResumoOrcamentos,
   SituacaoOrcamento,
   Transacao,
@@ -218,6 +226,57 @@ interface DashboardApi {
   geradoEm: string
 }
 
+interface RegistroImportacaoApi {
+  linha: number
+  data: string
+  descricao: string
+  valor: number
+  tipo: TipoTransacao
+  categoriaSugerida: CategoriaApi
+  duplicado: boolean
+}
+
+interface AnaliseImportacaoApi {
+  nomeArquivo: string
+  formato: FormatoImportacao
+  totalLidos: number
+  totalNovos: number
+  totalDuplicados: number
+  registros: RegistroImportacaoApi[]
+}
+
+interface ImportacaoApi {
+  id: number
+  nomeArquivo: string
+  formato: FormatoImportacao
+  status: ImportacaoArquivo['status']
+  totalLidos: number
+  totalImportados: number
+  totalDuplicados: number
+  executadoPor: string
+  dataCriacao: string
+  dataDesfeita?: string | null
+}
+
+interface RelatorioResumoApi extends Omit<RelatorioResumo,
+  'tipo' | 'totalEntradas' | 'totalSaidas' | 'saldo' | 'fluxoMensal' | 'categorias' | 'transacoes'> {
+  tipo?: TipoTransacao | null
+  totalEntradas: number
+  totalSaidas: number
+  saldo: number
+  fluxoMensal: Array<{ mes: string; entradas: number; saidas: number }>
+  categorias: Array<{ categoria: string; quantidade: number; total: number; media: number }>
+  transacoes: Array<{
+    id: number
+    contexto: string
+    data: string
+    descricao: string
+    categoria: string
+    tipo: TipoTransacao
+    valor: number
+  }>
+}
+
 const DURACAO_TOKEN_REDEFINICAO = 30 * 60 * 1000
 
 function usuarioResumo(usuario: UsuarioApi): UsuarioResumo {
@@ -310,6 +369,25 @@ function mapearOrcamento(orcamento: OrcamentoApi): Orcamento {
     valorConsumido: Number(orcamento.valorConsumido),
     percentualConsumido: Number(orcamento.percentualConsumido),
   }
+}
+
+function mapearImportacao(importacao: ImportacaoApi): ImportacaoArquivo {
+  return {
+    ...importacao,
+    id: String(importacao.id),
+    dataDesfeita: importacao.dataDesfeita ?? undefined,
+  }
+}
+
+function parametrosRelatorio(filtros: FiltrosRelatorio) {
+  const parametros = new URLSearchParams({
+    dataInicial: filtros.dataInicial,
+    dataFinal: filtros.dataFinal,
+  })
+  if (filtros.tipo) parametros.set('tipo', filtros.tipo)
+  if (filtros.categoriaId) parametros.set('categoriaId', filtros.categoriaId)
+  filtros.contextoIds?.forEach((id) => parametros.append('contextoIds', id))
+  return parametros
 }
 
 export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFinanceiro, ServicoContextos {
@@ -763,13 +841,97 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
     )
   }
 
+  async analisarImportacao(arquivo: File): Promise<AnaliseImportacao> {
+    const formulario = new FormData()
+    formulario.append('arquivo', arquivo)
+    const analise = await this.requisitar<AnaliseImportacaoApi>(
+      '/api/v1/importacoes/analise',
+      { method: 'POST', body: formulario },
+      true,
+    )
+    return {
+      ...analise,
+      registros: analise.registros.map((registro) => ({
+        ...registro,
+        valor: Number(registro.valor),
+        categoriaSugerida: mapearCategoria(registro.categoriaSugerida),
+      })),
+    }
+  }
+
+  async confirmarImportacao(entrada: EntradaConfirmacaoImportacao): Promise<ImportacaoArquivo> {
+    const importacao = await this.requisitar<ImportacaoApi>('/api/v1/importacoes', {
+      method: 'POST',
+      body: JSON.stringify({
+        ...entrada,
+        registros: entrada.registros.map((registro) => ({
+          ...registro,
+          categoriaId: Number(registro.categoriaId),
+        })),
+      }),
+    }, true)
+    return mapearImportacao(importacao)
+  }
+
+  async listarImportacoes(): Promise<ImportacaoArquivo[]> {
+    const importacoes = await this.requisitar<ImportacaoApi[]>('/api/v1/importacoes', {}, true)
+    return importacoes.map(mapearImportacao)
+  }
+
+  async desfazerUltimaImportacao(): Promise<ImportacaoArquivo> {
+    return mapearImportacao(await this.requisitar<ImportacaoApi>(
+      '/api/v1/importacoes/ultima', { method: 'DELETE' }, true,
+    ))
+  }
+
+  async obterRelatorio(filtros: FiltrosRelatorio): Promise<RelatorioResumo> {
+    const resumo = await this.requisitar<RelatorioResumoApi>(
+      `/api/v1/relatorios/resumo?${parametrosRelatorio(filtros)}`,
+      {}, true,
+    )
+    return {
+      ...resumo,
+      tipo: resumo.tipo ?? undefined,
+      totalEntradas: Number(resumo.totalEntradas),
+      totalSaidas: Number(resumo.totalSaidas),
+      saldo: Number(resumo.saldo),
+      fluxoMensal: resumo.fluxoMensal.map((item) => ({
+        ...item, entradas: Number(item.entradas), saidas: Number(item.saidas),
+      })),
+      categorias: resumo.categorias.map((item) => ({
+        ...item, total: Number(item.total), media: Number(item.media),
+      })),
+      transacoes: resumo.transacoes.map((item) => ({
+        ...item, id: String(item.id), valor: Number(item.valor),
+      })),
+    }
+  }
+
+  async exportarRelatorio(
+    filtros: FiltrosRelatorio,
+    formato: FormatoRelatorio,
+  ): Promise<ArquivoDownload> {
+    const parametros = parametrosRelatorio(filtros)
+    parametros.set('formato', formato)
+    const resposta = await this.buscarAutenticado(`/api/v1/relatorios/exportacao?${parametros}`)
+    const disposicao = resposta.headers.get('Content-Disposition') ?? ''
+    const utf8 = disposicao.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+    const simples = disposicao.match(/filename="?([^";]+)"?/i)?.[1]
+    return {
+      conteudo: await resposta.blob(),
+      nome: decodeURIComponent(utf8 ?? simples ?? `relatorio-ji.${formato.toLowerCase()}`),
+    }
+  }
+
   private async requisitar<T = void>(
     caminho: string,
     opcoes: RequestInit = {},
     autenticado = false,
   ): Promise<T> {
     const headers = new Headers(opcoes.headers)
-    if (opcoes.body) headers.set('Content-Type', 'application/json')
+    if (opcoes.body && !(opcoes.body instanceof FormData)) {
+      headers.set('Content-Type', 'application/json')
+    }
     if (autenticado) {
       const sessao = lerSessaoAtual()
       if (!sessao) throw new ErroApi('sessao-invalida', 'Faça login novamente.', {}, 401)
@@ -788,6 +950,24 @@ export class ServicoRest implements ServicoAutenticacao, ServicoConta, ServicoFi
     }
     if (resposta.status === 204) return undefined as T
     return await resposta.json() as T
+  }
+
+  private async buscarAutenticado(caminho: string): Promise<Response> {
+    const sessao = lerSessaoAtual()
+    if (!sessao) throw new ErroApi('sessao-invalida', 'Faça login novamente.', {}, 401)
+    const resposta = await fetch(`${this.urlBase}${caminho}`, {
+      headers: { Authorization: `Bearer ${sessao.token}` },
+    })
+    if (!resposta.ok) {
+      const problema = await resposta.json().catch(() => ({})) as ProblemaApi
+      throw new ErroApi(
+        problema.codigo ?? 'erro-inesperado',
+        problema.detail ?? 'Não foi possível concluir a operação.',
+        problema.campos ?? {},
+        resposta.status,
+      )
+    }
+    return resposta
   }
 
   private mapearErroAutenticacao(erro: unknown) {
