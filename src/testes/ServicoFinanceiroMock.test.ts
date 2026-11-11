@@ -11,7 +11,7 @@ describe('serviço financeiro mock', () => {
 
   it('gerencia categorias personalizadas e protege nomes já disponíveis', async () => {
     const iniciais = await servico.listarCategorias()
-    expect(iniciais.filter((categoria) => categoria.tipo === 'PADRAO')).toHaveLength(5)
+    expect(iniciais.filter((categoria) => categoria.tipo === 'PADRAO')).toHaveLength(6)
 
     const categoria = await servico.criarCategoria('  Assinaturas  ')
     expect(categoria).toMatchObject({ nome: 'Assinaturas', tipo: 'PERSONALIZADA' })
@@ -104,5 +104,36 @@ describe('serviço financeiro mock', () => {
     await servico.excluirOrcamento(criado.id)
     expect((await servico.listarOrcamentos(mes)).itens)
       .not.toContainEqual(expect.objectContaining({ id: criado.id }))
+  })
+
+  it('analisa, confirma e desfaz importações e gera relatórios', async () => {
+    const analise = await servico.analisarImportacao(new File(['extrato'], 'extrato.xlsx'))
+    expect(analise).toMatchObject({ formato: 'XLSX', totalNovos: 2 })
+
+    const importacao = await servico.confirmarImportacao({
+      nomeArquivo: analise.nomeArquivo,
+      formato: analise.formato,
+      totalLidos: analise.totalLidos,
+      totalDuplicados: analise.totalDuplicados,
+      registros: analise.registros.map((item) => ({
+        data: item.data,
+        descricao: item.descricao,
+        valor: item.valor,
+        tipo: item.tipo,
+        categoriaId: item.categoriaSugerida.id,
+      })),
+    })
+    expect(importacao).toMatchObject({ status: 'CONCLUIDA', totalImportados: 2 })
+
+    const relatorio = await servico.obterRelatorio({
+      dataInicial: '2000-01-01', dataFinal: hoje,
+    })
+    expect(relatorio.quantidadeTransacoes).toBe(4)
+    await expect(servico.exportarRelatorio({
+      dataInicial: '2000-01-01', dataFinal: hoje,
+    }, 'PDF')).resolves.toMatchObject({ nome: 'relatorio-ji.pdf' })
+
+    await expect(servico.desfazerUltimaImportacao()).resolves.toMatchObject({ status: 'DESFEITA' })
+    expect((await servico.listarTransacoes()).totalItens).toBe(2)
   })
 })

@@ -21,7 +21,7 @@ test.describe('transações e categorias da Sprint 3', () => {
     await modal.getByRole('button', { name: 'Criar categoria' }).click()
     await expect(page.getByText('Cursos', { exact: true })).toBeVisible()
 
-    await page.getByRole('link', { name: 'Transações' }).click()
+    await page.getByRole('link', { name: 'Transações', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Transações', exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Nova transação' }).click()
     modal = page.getByRole('dialog', { name: 'Nova transação' })

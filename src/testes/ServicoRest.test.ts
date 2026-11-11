@@ -174,4 +174,34 @@ describe('ServicoRest', () => {
     expect((fetchMock.mock.calls[2][1]?.headers as Headers).get('Authorization'))
       .toBe('Bearer jwt-teste')
   })
+
+  it('envia importação multipart e baixa relatório com nome exposto', async () => {
+    fetchMock
+      .mockResolvedValueOnce(respostaJson(respostaAutenticacao))
+      .mockResolvedValueOnce(respostaJson({
+        nomeArquivo: 'extrato.xlsx', formato: 'XLSX', totalLidos: 1,
+        totalNovos: 1, totalDuplicados: 0,
+        registros: [{
+          linha: 2, data: '2026-11-02', descricao: 'Mercado', valor: 42.5,
+          tipo: 'SAIDA', duplicado: false,
+          categoriaSugerida: { id: 1, nome: 'Alimentação', tipo: 'PADRAO' },
+        }],
+      }))
+      .mockResolvedValueOnce(new Response('arquivo', {
+        status: 200,
+        headers: { 'Content-Disposition': "attachment; filename*=UTF-8''relatorio-ji.pdf" },
+      }))
+    await servico.entrar({ email: 'filipe@example.com', senha: 'senha-segura', lembrar: false })
+
+    await expect(servico.analisarImportacao(new File(['xlsx'], 'extrato.xlsx')))
+      .resolves.toMatchObject({ registros: [{ valor: 42.5, categoriaSugerida: { id: '1' } }] })
+    const opcoesImportacao = fetchMock.mock.calls[1][1]!
+    expect(opcoesImportacao.body).toBeInstanceOf(FormData)
+    expect((opcoesImportacao.headers as Headers).has('Content-Type')).toBe(false)
+
+    await expect(servico.exportarRelatorio({
+      dataInicial: '2026-11-01', dataFinal: '2026-11-30', contextoIds: ['10'],
+    }, 'PDF')).resolves.toMatchObject({ nome: 'relatorio-ji.pdf' })
+    expect(fetchMock.mock.calls[2][0]).toContain('contextoIds=10')
+  })
 })
