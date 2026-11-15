@@ -28,6 +28,44 @@ Para iniciar sem o back-end:
 VITE_USAR_MOCK=true npm run dev
 ```
 
+## Execução com Docker
+
+Construa a imagem informando a origem da API e o modo de execução:
+
+```bash
+docker build \
+  --build-arg VITE_API_URL=http://localhost:8080 \
+  --build-arg VITE_USAR_MOCK=false \
+  -t ji-front:local .
+```
+
+Depois, inicie o front-end em `http://localhost:5173`:
+
+```bash
+docker run --rm --name ji-front -p 5173:8080 ji-front:local
+```
+
+Para gerar uma imagem que funciona sem o back-end, habilite o mock durante o
+build:
+
+```bash
+docker build \
+  --build-arg VITE_USAR_MOCK=true \
+  -t ji-front:mock .
+
+docker run --rm --name ji-front-mock -p 5173:8080 ji-front:mock
+```
+
+No build, `-t` define o nome e a tag da imagem. Na execução, `--name` define o
+nome do container. Esses nomes não são fixados pelo `Dockerfile` e podem ser
+alterados nos comandos conforme necessário.
+
+Os valores padrão são `VITE_API_URL=http://localhost:8080` e
+`VITE_USAR_MOCK=false`. Como o Vite incorpora essas variáveis públicas no
+bundle, qualquer alteração nelas exige reconstruir a imagem. A execução usa
+somente os comandos padrão do Docker; não é necessário Makefile nem Docker
+Compose.
+
 Conta do mock:
 
 - e-mail: `filipe.lopes@email.com`;
